@@ -91,7 +91,7 @@ router.get('/get/count', async (req, res) => {
 
 router.post('/', upload.fields([
     { name: 'picture', maxCount: 1 },
-    { name: 'servpic', maxCount: 1 },
+   
   ]), async (req, res) => {
     try {
       // Extract data from the request
@@ -99,13 +99,13 @@ router.post('/', upload.fields([
   
       // Check if picture is present in the request
       const picture = req.files['picture'][0].path;
-      const servpic = req.files['servpic'][0].path;
+      
   
   
   
       // Upload image to Cloudinary
       const cloudinaryResult = await cloudinary.uploader.upload(picture);
-      const cloudinaryRe = await cloudinary.uploader.upload(servpic);
+      // const cloudinaryRe = await cloudinary.uploader.upload(servpic);
   
       // Create a new product instance
       const newProduct = new Mechanics({
@@ -117,7 +117,7 @@ router.post('/', upload.fields([
         phone,
         author: req.body.userId,
         picture: cloudinaryResult.secure_url,
-        servpic: cloudinaryRe.secure_url,
+        // servpic: cloudinaryRe.secure_url,
       });
   
       // Save the product to the database
@@ -135,7 +135,7 @@ router.post('/', upload.fields([
   // Edit an existing car
   router.put('/:id', upload.fields([
     { name: 'picture', maxCount: 1 },
-    { name: 'servpic', maxCount: 1 },
+    // { name: 'servpic', maxCount: 1 },
   ]), async (req, res) => {
     try {
       // Extract data from the request
@@ -143,12 +143,12 @@ router.post('/', upload.fields([
       const carId = req.params.id;
   
       // Check if pictures are present in the request
-      const carpic = req.files['carpic'][0].path;
-      const servpic = req.files['servpic'][0].path;
+      const picture = req.files['picture'][0].path;
+      // const servpic = req.files['servpic'][0].path;
   
       // Upload images to Cloudinary
-      const cloudinaryResult = await cloudinary.uploader.upload(carpic);
-      const cloudinaryRe = await cloudinary.uploader.upload(servpic);
+      const cloudinaryResult = await cloudinary.uploader.upload(picture);
+      // const cloudinaryRe = await cloudinary.uploader.upload(servpic);
   
       // Find and update the existing car
       const updatedCar = await Mechanics.findByIdAndUpdate(
@@ -160,8 +160,8 @@ router.post('/', upload.fields([
           region,
           town,
           phone,
-          carpic: cloudinaryResult.secure_url,
-          servpic: cloudinaryRe.secure_url,
+         picture: cloudinaryResult.secure_url,
+          // servpic: cloudinaryRe.secure_url,
         },
         { new: true }
       );
