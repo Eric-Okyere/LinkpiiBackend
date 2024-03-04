@@ -78,7 +78,7 @@ router.post('/advert', upload.single('picture'), async (req, res) => {
 
 
 
- router.delete("/:id",(req, res)=>{
+ router.delete("/advert/:id",(req, res)=>{
     Advert.findByIdAndRemove(req.params.id).then(user=>{
         if(user){
             return res.status(200).json({success:true, message:"the users is deleted successfully"})

@@ -20,7 +20,7 @@ const CodeUsers = require("./routes/Codeusers")
 const Fashion = require("./routes/categoriesFashion")
 const Fashionpost = require("./routes/Fashion")
 const MechanicsRoutes = require("./routes/MechanicsRoutes")
-
+const Time = require("./routes/Time")
 const fs = require('fs');
 
 
@@ -57,6 +57,7 @@ app.use("/codeusers", CodeUsers);
 app.use("/fashion", Fashion); 
 app.use("/fashionpost", Fashionpost);
 app.use("/mechanics", MechanicsRoutes);
+app.use("/time", Time);
 
 
 try {
