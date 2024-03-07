@@ -3,11 +3,33 @@ const router = express.Router();
 const {Product} = require('../models/products/Fashion')
 const multer = require('multer');
 const cloudinary = require("cloudinary").v2
-// const sharp = require('sharp');
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { Products } = require('../models/categories/fashion');
-const sharp = require('sharp');
+
+
+
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Configure Multer to use Cloudinary as storage
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'upload', // Specify the folder in Cloudinary where the images will be stored
+      format: 'jpg', // Specify the format of the uploaded file
+      transformation: [
+        { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, // Resize and crop the image
+        { quality: 'auto:eco', fetch_format: 'auto' } // Optimize image quality and format
+      ]
+    },
+  });
+
+const upload = multer({ storage: storage });
 
 
 
@@ -90,28 +112,32 @@ router.get('/get/count', async (req, res) => {
 });
 
 
- 
+ // Assuming you have a route to handle viewing a product
+router.get('/products/:productId', async (req, res) => {
+  const productId = req.params.productId;
 
- cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  try {
+    // Find the product by ID
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Increment the view count
+    product.views++;
+
+    // Save the updated product document
+    await product.save();
+
+    // Return the product details with the updated view count
+    return res.json(product);
+  } catch (error) {
+    console.error('Error viewing product:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-// Configure Multer to use Cloudinary as storage
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'upload', // Specify the folder in Cloudinary where the images will be stored
-      format: 'jpg', // Specify the format of the uploaded file
-      transformation: [
-        { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, // Resize and crop the image
-        { quality: 'auto:eco', fetch_format: 'auto' } // Optimize image quality and format
-      ]
-    },
-  });
-
-const upload = multer({ storage: storage });
 
 // Create a new product with image upload
 router.post('/', upload.fields([

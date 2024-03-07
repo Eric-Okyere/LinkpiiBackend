@@ -50,8 +50,11 @@ const EmployeeSchema = mongoose.Schema({
   approved: {
     type: Boolean,
     default: false
+  },
+  views: {
+    type: Number,
+    default: 6
   }
-
 });
 
 EmployeeSchema.set('toJSON', {

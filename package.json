@@ -6,7 +6,7 @@
   "author": "Eric Okyere",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "node index.js",
     "build": "npm install"
   },
   "dependencies": {
