@@ -114,22 +114,6 @@ exports.userSignIn = async (req, res) => {
   });
 
 
-
-  // let oldTokens = user.tokens || [];
-
-  // if (oldTokens.length) {
-  //   oldTokens = oldTokens.filter(t => {
-  //     const timeDiff = (Date.now() - parseInt(t.signedAt)) / 1000;
-  //     if (timeDiff < 86400) {
-  //       return t;
-  //     }
-  //   });
-  // }
-
-  // await User.findByIdAndUpdate(user._id, {
-  //   tokens: [...oldTokens, { token, signedAt: Date.now().toString() }],
-  // });
-
   const userInfo = {
     name: user.name,
     email: user.email,
