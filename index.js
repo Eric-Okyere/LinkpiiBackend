@@ -19,6 +19,9 @@ const Emergency = require("./routes/Emergency")
 const CodeUsers = require("./routes/Codeusers")
 const Fashion = require("./routes/categoriesFashion")
 const Fashionpost = require("./routes/Fashion")
+const Services = require("./routes/Services")
+const Okada = require("./routes/Okada")
+const SpareParts = require("./routes/SpareParts")
 const MechanicsRoutes = require("./routes/MechanicsRoutes")
 const Call = require("./routes/call")
 const Time = require("./routes/Time")
@@ -60,6 +63,9 @@ app.use("/fashionpost", Fashionpost);
 app.use("/mechanics", MechanicsRoutes);
 app.use("/time", Time);
 app.use("/call", Call);
+app.use("/services", Services);
+app.use("/okada", Okada);
+app.use("/spare", SpareParts);
 
 
 try {
