@@ -34,6 +34,10 @@ const MechanicsSchema = mongoose.Schema({
     type: String,
     default: ""
   },
+  views: {
+    type: String,
+    default: 6
+  },
   
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
   dateCreated: {

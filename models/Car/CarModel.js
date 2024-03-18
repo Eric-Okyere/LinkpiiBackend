@@ -34,6 +34,10 @@ const CarSchema = mongoose.Schema({
         type:String,
         default:""
     },
+    views:{
+        type:String,
+        default:6
+    },
    
     driverpic:{
         type:String,

@@ -131,6 +131,32 @@ router.post('/', upload.fields([
   });
   
   
+ // Assuming you have a route to handle viewing a product
+ router.get('/products/:productId', async (req, res) => {
+  const productId = req.params.productId;
+
+  try {
+    // Find the product by ID
+    const product = await Mechanics.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Increment the view count
+    product.views++;
+
+    // Save the updated product document
+    await product.save();
+
+    // Return the product details with the updated view count
+    return res.json(product);
+  } catch (error) {
+    console.error('Error viewing product:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
   
   // Edit an existing car
   router.put('/:id', upload.fields([

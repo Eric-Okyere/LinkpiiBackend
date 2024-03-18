@@ -38,6 +38,10 @@ const EmployeeSchema = mongoose.Schema({
     type: String,
     default: 0
   },
+  views: {
+    type: String,
+    default: 6
+  },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
   dateCreated: {
     type: Date,
