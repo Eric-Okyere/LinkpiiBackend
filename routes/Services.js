@@ -35,7 +35,7 @@ const upload = multer({ storage: storage });
 
 router.get(`/`, async (req,res)=>{
   
-    const productList = await Services.find().sort({ dateCreated: -1 })
+    const productList = await Services.find().populate("category").sort({ dateCreated: -1 })
     if(!productList){
         res.status(500).json({success: false})
     }
@@ -48,7 +48,7 @@ router.get(`/`, async (req,res)=>{
 
  router.get(`/approved`, async (req, res) => {
   try {
-    const approvedProducts = await Services.find({ approved: true }).sort({ dateCreated: -1 })
+    const approvedProducts = await Services.find({ approved: true }).populate("category").sort({ dateCreated: -1 })
 
     res.json(approvedProducts);
   } catch (error) {
@@ -59,7 +59,7 @@ router.get(`/`, async (req,res)=>{
 
  
  router.get(`/:id`, async (req,res)=>{
-    const product = await Services.findById(req.params.id)
+    const product = await Services.findById(req.params.id).populate("category")
     if(!product){
         res.status(500).json({success: false})
     }
@@ -68,7 +68,7 @@ router.get(`/`, async (req,res)=>{
 
  router.get('/user/:id',async(req, res)=>{
     console.log(req.params.id)
-    const userItems=await Services.find({author:req.params.id}).sort({ dateCreated: -1 })
+    const userItems=await Services.find({author:req.params.id}).populate("category").sort({ dateCreated: -1 })
 
     // res.send({success:'true',userItems})
     res.send(userItems)
@@ -127,6 +127,7 @@ router.post('/', upload.fields([
         location,
         region,
         town,
+        category
         } = req.body;
   
       // Check if picture is present in the request
@@ -148,7 +149,7 @@ router.post('/', upload.fields([
         location,
         region,
         town,
-        
+        category,
         author: req.body.userId,
         picture: cloudinaryResult.secure_url,
         picturesec: cloudinaryRe.secure_url,
@@ -173,7 +174,7 @@ router.post('/', upload.fields([
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, description, region, town, phone, location, price } = req.body;
+      const { name, description, region, town, phone, location, price,category } = req.body;
       const carId = req.params.id;
   
       // Check if pictures are present in the request
@@ -199,6 +200,7 @@ router.post('/', upload.fields([
           town,
           phone,
           location,
+          category,
           picture: cloudinaryResult.secure_url,
           picturesec: cloudinaryRe.secure_url,
         },

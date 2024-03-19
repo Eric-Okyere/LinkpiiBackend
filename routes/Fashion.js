@@ -199,7 +199,7 @@ router.post('/', upload.fields([
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, description, region, town, phone, location, price } = req.body;
+      const { name, description, region, town, phone, location, price, category } = req.body;
       const carId = req.params.id;
   
       // Check if pictures are present in the request
@@ -225,6 +225,7 @@ router.post('/', upload.fields([
           town,
           phone,
           location,
+          category,
           picture: cloudinaryResult.secure_url,
           picturesec: cloudinaryRe.secure_url,
         },

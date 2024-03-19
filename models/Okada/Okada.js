@@ -38,7 +38,7 @@ const OkadaSchema = mongoose.Schema({
         type:String,
         default:""
     },
-    carpic:{
+    driverpic:{
         type:String,
         default:""
     },

@@ -26,7 +26,7 @@ const MechanicsRoutes = require("./routes/MechanicsRoutes")
 const Call = require("./routes/call")
 const Time = require("./routes/Time")
 const fs = require('fs');
-
+const Servicescategories = require("./routes/ServicesCategories")
 
 
 const targetDirectory = '/farmbackend';
@@ -66,6 +66,7 @@ app.use("/call", Call);
 app.use("/services", Services);
 app.use("/okada", Okada);
 app.use("/spare", SpareParts);
+app.use("/servcat", Servicescategories);
 
 
 try {

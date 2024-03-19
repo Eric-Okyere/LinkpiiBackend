@@ -9,6 +9,33 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { Car } = require('../models/Car/CarModel');
 const { Category } = require('../models/categories/categories');
 
+
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Configure Multer to use Cloudinary as storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'upload', // Specify the folder in Cloudinary where the images will be stored
+    format: 'jpg', // Specify the format of the uploaded file
+    transformation: [
+      { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, // Resize and crop the image
+      { quality: 'auto:eco', fetch_format: 'auto' } // Optimize image quality and format
+    ]
+  },
+});
+
+const upload = multer({ storage: storage });
+
+
+
+
+
 router.get(`/`, async (req,res)=>{
   
     const productList = await Product.find().populate("category").sort({ dateCreated: -1 })
@@ -127,27 +154,6 @@ router.get('/get/count', async (req, res) => {
 
  
 
- cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// Configure Multer to use Cloudinary as storage
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'upload', // Specify the folder in Cloudinary where the images will be stored
-    format: 'jpg', // Specify the format of the uploaded file
-    transformation: [
-      { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, // Resize and crop the image
-      { quality: 'auto:eco', fetch_format: 'auto' } // Optimize image quality and format
-    ]
-  },
-});
-
-const upload = multer({ storage: storage });
-
 // Create a new product with image upload
 router.post('/', upload.single('picture'), async (req, res) => {
   try {
@@ -191,12 +197,17 @@ router.post('/', upload.single('picture'), async (req, res) => {
  
 router.put("/:id", upload.single('picture'), async (req, res) => {
   try {
-      // Retrieve other fields from the request body
+      
+    const picture = req.file ? req.file.path : '';
+
+    // Upload image to Cloudinary
+    const cloudinaryResult = await cloudinary.uploader.upload(picture);
+    // Retrieve other fields from the request body
       const {  name,
         phone,
         price,
         description,
-        picture,
+       
         location,
         region,
         town,
@@ -208,11 +219,11 @@ router.put("/:id", upload.single('picture'), async (req, res) => {
           phone,
           price,
           description,
-          picture,
           location,
           region,
           town,
-          category
+          category,
+          picture: cloudinaryResult.secure_url,
       };
      
       // Check if a file was uploaded
