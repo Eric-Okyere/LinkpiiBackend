@@ -214,6 +214,23 @@ router.put('/:id/approveokada', async (req, res) => {
   }
 });
 
+router.put('/:id/deactivateokada', async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    const product = await Okada.findByIdAndUpdate(productId, { approved: false }, { new: true });
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 
 router.delete("/:id",(req, res)=>{
