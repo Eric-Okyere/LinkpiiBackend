@@ -194,60 +194,42 @@ router.post('/', upload.single('picture'), async (req, res) => {
 
 
 
- 
-router.put("/:id", upload.single('picture'), async (req, res) => {
+router.put('/:id', upload.single('picture'), async (req, res) => {
   try {
-      
-    const picture = req.file ? req.file.path : '';
+    // Extract data from the request
+    const { name, description, region, town, location, category, phone, price } = req.body;
+    
+    // Check if a file was provided with the request
+    let pictureUrl = '';
+    if (req.file) {
+      // Upload image to Cloudinary
+      const cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+      pictureUrl = cloudinaryResult.secure_url;
+    }
 
-    // Upload image to Cloudinary
-    const cloudinaryResult = await cloudinary.uploader.upload(picture);
-    // Retrieve other fields from the request body
-      const {  name,
-        phone,
-        price,
-        description,
-       
-        location,
-        region,
-        town,
-        category } = req.body;
+    // Find the product by ID and update its fields
+    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, {
+      name,
+      description,
+      region,
+      town,
+      location,
+      category,
+      phone,
+      price,
+      picture: pictureUrl // Assign the Cloudinary URL to the picture field
+    }, { new: true });
 
-      // Construct the update object
-      const updateObject = {
-          name,
-          phone,
-          price,
-          description,
-          location,
-          region,
-          town,
-          category,
-          picture: cloudinaryResult.secure_url,
-      };
-     
-      // Check if a file was uploaded
-      if (req.file) {
-          // Assuming 'picture' is the name attribute of your file input
-          updateObject.picture = req.file.path; // Store the file path in the 'picture' field
-         
-      }
-
-      // Update the product
-      const product = await Product.findByIdAndUpdate(
-          req.params.id,
-          updateObject,
-          { new: true }
-      );
-
-      if (!product)
-          return res.status(500).send("The product cannot be updated");
-
-      res.send(product);
+    // Return the updated product
+    res.json(updatedProduct);
   } catch (error) {
-      res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
+
 
 router.put('/:id/approve', async (req, res) => {
   const productId = req.params.id;
