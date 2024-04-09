@@ -27,6 +27,11 @@ const Call = require("./routes/call")
 const Time = require("./routes/Time")
 const fs = require('fs');
 const Servicescategories = require("./routes/ServicesCategories")
+const Shopscat = require("./routes/ShopsCategories")
+const Shop = require("./routes/Shops")
+
+
+
 
 
 const targetDirectory = '/farmbackend';
@@ -67,6 +72,9 @@ app.use("/services", Services);
 app.use("/okada", Okada);
 app.use("/spare", SpareParts);
 app.use("/servcat", Servicescategories);
+app.use("/shopscat", Shopscat);
+app.use("/shops", Shop);
+
 
 
 try {
