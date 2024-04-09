@@ -68,7 +68,7 @@ router.get(`/`, async (req,res)=>{
 
  router.get('/user/:id',async(req, res)=>{
     console.log(req.params.id)
-    const userItems=awaitShops.find({author:req.params.id}).populate("category").sort({ dateCreated: -1 })
+    const userItems=await Shops.find({author:req.params.id}).populate("category").sort({ dateCreated: -1 })
 
     // res.send({success:'true',userItems})
     res.send(userItems)
