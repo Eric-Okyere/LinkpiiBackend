@@ -50,6 +50,10 @@ const EmployeeSchema = mongoose.Schema({
   approved: {
     type: Boolean,
     default: false
+  },
+  boost: {
+    type: Boolean,
+    default: false
   }
 
 });

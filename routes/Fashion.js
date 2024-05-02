@@ -138,6 +138,35 @@ router.get('/products/:productId', async (req, res) => {
   }
 });
 
+router.get('/region/central', async (req, res) => {
+  try {
+    const accraProducts = await Product.find({ region: 'Central' }).populate("category").sort({ dateCreated: -1 });
+
+    if (!accraProducts) {
+      return res.status(404).json({ message: 'No products found with region set to "accra"' });
+    }
+
+    res.json(accraProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.get('/region/accra', async (req, res) => {
+  try {
+    const accraProducts = await Product.find({ region: 'Accra' }).populate("category").sort({ dateCreated: -1 });
+
+    if (!accraProducts) {
+      return res.status(404).json({ message: 'No products found with region set to "accra"' });
+    }
+
+    res.json(accraProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 // Create a new product with image upload
 router.post('/', upload.fields([

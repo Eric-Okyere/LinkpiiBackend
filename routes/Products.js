@@ -36,14 +36,23 @@ const upload = multer({ storage: storage });
 
 
 
-router.get(`/`, async (req,res)=>{
-  
-    const productList = await Product.find().populate("category").sort({ dateCreated: -1 })
-    if(!productList){
-        res.status(500).json({success: false})
+router.get(`/`, async (req, res) => {
+  try {
+    // Find all products, populating the category field, and sorting by the boost field first in descending order,
+    // then by the dateCreated field in descending order
+    const productList = await Product.find().populate("category").sort({ boost: -1, dateCreated: -1 });
+
+    if (!productList) {
+      return res.status(500).json({ success: false });
     }
-    res.send(productList)
- })
+
+    res.send(productList);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 
  router.get("/detail", async (req, res) => {
@@ -151,6 +160,53 @@ router.get('/get/count', async (req, res) => {
   }
 });
 
+// Search by region
+router.get('/region/accra', async (req, res) => {
+  try {
+    const accraProducts = await Product.find({ region: 'Accra' }).populate("category").sort({ dateCreated: -1 });
+
+    if (!accraProducts) {
+      return res.status(404).json({ message: 'No products found with region set to "accra"' });
+    }
+
+    res.json(accraProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.get('/region/central', async (req, res) => {
+  try {
+    const accraProducts = await Product.find({ region: 'Central' }).populate("category").sort({ dateCreated: -1 });
+
+    if (!accraProducts) {
+      return res.status(404).json({ message: 'No products found with region set to "accra"' });
+    }
+
+    res.json(accraProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.get('/region/kumasi', async (req, res) => {
+  try {
+    const accraProducts = await Product.find({ region: 'Kumasi' }).populate("category").sort({ dateCreated: -1 });
+
+    if (!accraProducts) {
+      return res.status(404).json({ message: 'No products found with region set to "accra"' });
+    }
+
+    res.json(accraProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 
  
 
@@ -222,6 +278,28 @@ router.put('/:id', upload.single('picture'), async (req, res) => {
 
     // Return the updated product
     res.json(updatedProduct);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+router.put('/:id/boost', async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    // Find the product by ID and update its boost field to true
+    const product = await Product.findByIdAndUpdate(productId, { boost: true }, { new: true });
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    // Fetch all approved products, sorting by the boost field in descending order
+    const allApprovedProducts = await Product.find({ approved: true }).sort({ boost: -1, dateCreated: -1 });
+
+    res.json(allApprovedProducts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });

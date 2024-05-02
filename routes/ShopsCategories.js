@@ -96,9 +96,9 @@ router.post('/', upload.single('picture'), async (req, res) => {
  router.delete("/:id",(req, res)=>{
     Shops.findByIdAndRemove(req.params.id).then(user=>{
         if(user){
-            return res.status(200).json({success:true, message:"the users is deleted successfully"})
+            return res.status(200).json({success:true, message:"the category is deleted successfully"})
         } else{
-            return res.status(404).json({success: false, message: "users not found"})
+            return res.status(404).json({success: false, message: "category not found"})
         }
     }).catch(err=>{
         return res.status(400).json({success: false, error: err})

@@ -85,6 +85,52 @@ router.get('/get/count', async (req, res) => {
   }
 });
 
+// Search by region
+router.get('/region/accra', async (req, res) => {
+  try {
+    const accraProducts = await Services.find({ region: 'Accra' }).populate("category").sort({ dateCreated: -1 });
+
+    if (!accraProducts) {
+      return res.status(404).json({ message: 'No products found with region set to "accra"' });
+    }
+
+    res.json(accraProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.get('/region/central', async (req, res) => {
+  try {
+    const accraProducts = await Services.find({ region: 'Central' }).populate("category").sort({ dateCreated: -1 });
+
+    if (!accraProducts) {
+      return res.status(404).json({ message: 'No products found with region set to "accra"' });
+    }
+
+    res.json(accraProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.get('/region/kumasi', async (req, res) => {
+  try {
+    const accraProducts = await Services.find({ region: 'Kumasi' }).populate("category").sort({ dateCreated: -1 });
+
+    if (!accraProducts) {
+      return res.status(404).json({ message: 'No products found with region set to "accra"' });
+    }
+
+    res.json(accraProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
  // Assuming you have a route to handle viewing a product
 router.get('/products/:productId', async (req, res) => {
