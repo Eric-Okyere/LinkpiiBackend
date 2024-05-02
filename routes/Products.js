@@ -78,7 +78,7 @@ router.get('/approved', async (req, res) => {
   try {
     // Find all products, populating the category field, and sorting by the boost field first in descending order,
     // then by the dateCreated field in descending order
-    const productList = await Product.find().populate("category").sort({ boost: -1, dateCreated: -1 });
+    const productList = await Product.find({ approved: true }).populate("category").sort({boost:-1, dateCreated: -1 });
 
     if (!productList) {
       return res.status(500).json({ success: false });
