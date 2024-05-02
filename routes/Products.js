@@ -36,23 +36,14 @@ const upload = multer({ storage: storage });
 
 
 
-router.get(`/`, async (req, res) => {
-  try {
-    // Find all products, populating the category field, and sorting by the boost field first in descending order,
-    // then by the dateCreated field in descending order
-    const productList = await Product.find().populate("category").sort({ boost: -1, dateCreated: -1 });
-
-    if (!productList) {
-      return res.status(500).json({ success: false });
+router.get(`/`, async (req,res)=>{
+  
+    const productList = await Product.find().populate("category").sort({ dateCreated: -1 })
+    if(!productList){
+        res.status(500).json({success: false})
     }
-
-    res.send(productList);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
+    res.send(productList)
+ })
 
 
  router.get("/detail", async (req, res) => {
@@ -83,11 +74,17 @@ router.get(`/`, async (req, res) => {
 });
 
 
- router.get('/approved', async (req, res) => {
+router.get('/approved', async (req, res) => {
   try {
-    const approvedProducts = await Product.find({ approved: true }).populate("category").sort({ dateCreated: -1 })
+    // Find all products, populating the category field, and sorting by the boost field first in descending order,
+    // then by the dateCreated field in descending order
+    const productList = await Product.find().populate("category").sort({ boost: -1, dateCreated: -1 });
 
-    res.json(approvedProducts);
+    if (!productList) {
+      return res.status(500).json({ success: false });
+    }
+
+    res.send(productList);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
