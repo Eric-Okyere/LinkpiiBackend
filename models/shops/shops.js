@@ -54,6 +54,10 @@ const ShopSchema = mongoose.Schema({
   views: {
     type: Number,
     default: 6
+  },
+  boost: {
+    type: Boolean,
+    default: false
   }
 });
 

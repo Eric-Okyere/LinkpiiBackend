@@ -48,7 +48,7 @@ router.get(`/`, async (req,res)=>{
 
  router.get(`/approved`, async (req, res) => {
   try {
-    const approvedProducts = await Shops.find({ approved: true }).populate("category").sort({ dateCreated: -1 })
+    const approvedProducts = await Shops.find({ approved: true }).populate("category").sort({boost:-1, dateCreated: -1 });
 
     res.json(approvedProducts);
   } catch (error) {
@@ -226,6 +226,27 @@ router.put('/:id/approve', async (req, res) => {
     }
 
     res.json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.put('/:id/boost', async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    // Find the product by ID and update its boost field to true
+    const product = await Shops.findByIdAndUpdate(productId, { boost: true }, { new: true });
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    // Fetch all approved products, sorting by the boost field in descending order
+    const allApprovedProducts = await Shops.find({ approved: true }).sort({ boost: -1, dateCreated: -1 });
+
+    res.json(allApprovedProducts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
