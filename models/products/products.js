@@ -42,6 +42,10 @@ const EmployeeSchema = mongoose.Schema({
     type: String,
     default: 6
   },
+  whatsapp: {
+    type: String,
+    default: ""
+  },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
   dateCreated: {
     type: Date,

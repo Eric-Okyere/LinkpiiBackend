@@ -33,6 +33,10 @@ const OkadaSchema = mongoose.Schema({
         type:String,
         require:true
     },
+    whatsapp: {
+        type: String,
+        default: ""
+      },
 
     carpic:{
         type:String,

@@ -24,6 +24,7 @@ const Okada = require("./routes/Okada")
 const SpareParts = require("./routes/SpareParts")
 const MechanicsRoutes = require("./routes/MechanicsRoutes")
 const Call = require("./routes/call")
+const Whatsapp = require("./routes/Whatsapp")
 const Time = require("./routes/Time")
 const fs = require('fs');
 const Servicescategories = require("./routes/ServicesCategories")
@@ -68,6 +69,7 @@ app.use("/fashionpost", Fashionpost);
 app.use("/mechanics", MechanicsRoutes);
 app.use("/time", Time);
 app.use("/call", Call);
+app.use("/whatsapp", Whatsapp );
 app.use("/services", Services);
 app.use("/okada", Okada);
 app.use("/spare", SpareParts);

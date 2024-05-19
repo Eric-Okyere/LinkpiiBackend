@@ -51,6 +51,10 @@ const ShopSchema = mongoose.Schema({
     type: Boolean,
     default: false
   },
+  whatsapp: {
+    type: String,
+    default: ""
+  },
   views: {
     type: Number,
     default: 6

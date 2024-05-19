@@ -95,7 +95,7 @@ router.post('/', upload.fields([
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, location, services, region, town, phone} = req.body;
+      const { name, location, services, region, town, phone,whatsapp,} = req.body;
   
       // Check if picture is present in the request
       const picture = req.files['picture'][0].path;
@@ -114,6 +114,7 @@ router.post('/', upload.fields([
         services,
         region,
         town,
+        whatsapp,
         phone,
         author: req.body.userId,
         picture: cloudinaryResult.secure_url,
@@ -165,7 +166,7 @@ router.post('/', upload.fields([
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, location, services, region, town, phone } = req.body;
+      const { name, location, services, region, town, phone,whatsapp, } = req.body;
       const carId = req.params.id;
   
       // Check if pictures are present in the request
@@ -183,6 +184,7 @@ router.post('/', upload.fields([
           name,
           location,
           services,
+          whatsapp,
           region,
           town,
           phone,

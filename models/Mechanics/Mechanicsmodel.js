@@ -17,6 +17,10 @@ const MechanicsSchema = mongoose.Schema({
     type: String,
     require: true
   },
+  whatsapp: {
+    type: String,
+    default: ""
+  },
   location: {
     type: String,
     require: true

@@ -169,6 +169,7 @@ router.post('/', upload.fields([
       const {  name,
         phone,
         price,
+        whatsapp,
         description,
         location,
         region,
@@ -190,6 +191,7 @@ router.post('/', upload.fields([
       const newProduct = new Services({
         name,
         phone,
+        whatsapp,
         price,
         description,
         location,
@@ -220,7 +222,7 @@ router.post('/', upload.fields([
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, description, region, town, phone, location, price,category } = req.body;
+      const { name, description, region, town, phone, location, whatsapp, price,category } = req.body;
       const carId = req.params.id;
   
       // Check if pictures are present in the request
@@ -243,6 +245,7 @@ router.post('/', upload.fields([
           description,
           region,
           price,
+          whatsapp,
           town,
           phone,
           location,

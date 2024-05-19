@@ -211,7 +211,7 @@ router.get('/region/kumasi', async (req, res) => {
 router.post('/', upload.single('picture'), async (req, res) => {
   try {
     // Extract data from the request
-    const { name, description, region, town, location, category, phone, price } = req.body;
+    const { name, description, region, whatsapp, town, location, category, phone, price } = req.body;
 
     // Check if picture is present in the request
     const picture = req.file ? req.file.path : '';
@@ -228,6 +228,7 @@ router.post('/', upload.single('picture'), async (req, res) => {
       region,
       town,
       location,
+      whatsapp,
       category,
       phone,
       price,
@@ -250,7 +251,7 @@ router.post('/', upload.single('picture'), async (req, res) => {
 router.put('/:id', upload.single('picture'), async (req, res) => {
   try {
     // Extract data from the request
-    const { name, description, region, town, location, category, phone, price } = req.body;
+    const { name, description, whatsapp, region, town, location, category, phone, price } = req.body;
     
     // Check if a file was provided with the request
     let pictureUrl = '';
@@ -265,11 +266,13 @@ router.put('/:id', upload.single('picture'), async (req, res) => {
       name,
       description,
       region,
+      whatsapp,
       town,
       location,
       category,
       phone,
       price,
+      whatsapp,
       picture: pictureUrl // Assign the Cloudinary URL to the picture field
     }, { new: true });
 

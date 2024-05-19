@@ -55,6 +55,10 @@ const EmployeeSchema = mongoose.Schema({
     type: Number,
     default: 6
   },
+  whatsapp: {
+    type: String,
+    default: ""
+  },
   boost: {
     type: Boolean,
     default: false
