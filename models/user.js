@@ -42,6 +42,11 @@ const userSchema = new mongoose.Schema({
   default:false,
   require: true
  },
+ report:{
+  type: Boolean,
+  default:false,
+ 
+ },
  dateCreated:{
   type:Date, 
   default: Date.now 

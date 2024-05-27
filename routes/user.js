@@ -9,7 +9,9 @@ const {
   getUsers,
   deleteUser,
   getUserById,
-  userCount
+  userCount,
+  Report,
+  Rectified
 } = require('../controllers/user');
 
 const {
@@ -25,7 +27,8 @@ router.get("/getUsers",getUsers)
 router.get("/userbyid/:id",getUserById)
 router.get("/getUsers/count", userCount)
 router.delete("/deleteUser/:id",deleteUser)
-
+router.put('/:id/report', Report);
+router.put('/:id/rectify', Rectified);
 
 router.post('/create-user', 
 validateUserSignUp,

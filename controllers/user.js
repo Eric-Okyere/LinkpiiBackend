@@ -210,3 +210,36 @@ res.json({success: true, error: "Password reset link is sent to your email"})
 
 }
 
+exports.Report = async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    const product = await User.findByIdAndUpdate(productId, { report: true }, { new: true });
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.Rectified = async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    const product = await User.findByIdAndUpdate(productId, { report: false }, { new: false });
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
