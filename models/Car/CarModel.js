@@ -51,6 +51,10 @@ const CarSchema = mongoose.Schema({
         type:String,
         default:""
     },
+    size:{
+        type:String,
+        default:""
+    },
 
 
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'users'},

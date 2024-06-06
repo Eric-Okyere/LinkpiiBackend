@@ -116,7 +116,7 @@ router.post('/createcar', upload.fields([
 ]), async (req, res) => {
   try {
     // Extract data from the request
-    const { name, location, carnum, region, town, phone, card,whatsapp} = req.body;
+    const { name, location, carnum, region, town, phone, card,whatsapp,size} = req.body;
 
     // Check if picture is present in the request
     const carpic = req.files['carpic'][0].path;
@@ -136,6 +136,7 @@ router.post('/createcar', upload.fields([
       region,
       town,
       phone,
+      size,
       card,
       whatsapp,
       author: req.body.userId,
@@ -181,6 +182,7 @@ router.put('/:id', upload.fields([
         location,
         carnum,
         whatsapp,
+        size,
         region,
         card,
         town,
