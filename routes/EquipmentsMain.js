@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const {Equipmentmain} = require('../models/products/Equipments')
 const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { Shops } = require('../models/shops/shops');
 
 
 
@@ -35,7 +35,7 @@ const upload = multer({ storage: storage });
 
 router.get(`/`, async (req,res)=>{
   
-    const productList = await Shops.find().populate("category").sort({ dateCreated: -1 })
+    const productList = await Equipmentmain.find().populate("category").sort({ dateCreated: -1 })
     if(!productList){
         res.status(500).json({success: false})
     }
@@ -43,12 +43,37 @@ router.get(`/`, async (req,res)=>{
  })
 
 
-// 
+//  router.get("/detail", async (req, res) => {
+//   try {
+//       // Find all categories
+//       const categories = await Buildingcats.find();
+
+//       // Array to store category with approved products
+//       const categoriesWithApprovedProducts = [];
+
+//       // Iterate through each category
+//       for (const category of categories) {
+//           // Find products associated with the category where approved is true
+//           const products = await Product.find({ category: category._id, approved: true });
+
+//           // Add category with approved products to the result array
+//           categoriesWithApprovedProducts.push({
+//               // category: category,
+//               products: products
+//           });
+//       }
+
+//       res.json(categoriesWithApprovedProducts);
+//   } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
 
 
  router.get(`/approved`, async (req, res) => {
   try {
-    const approvedProducts = await Shops.find({ approved: true }).populate("category").sort({boost:-1, dateCreated: -1 });
+    const approvedProducts = await Equipmentmain.find({ approved: true }).populate("category").sort({boost:-1, dateCreated: -1 });
 
     res.json(approvedProducts);
   } catch (error) {
@@ -57,9 +82,11 @@ router.get(`/`, async (req,res)=>{
   }
 });
 
+
+
  
  router.get(`/:id`, async (req,res)=>{
-    const product = await Shops.findById(req.params.id).populate("category")
+    const product = await Equipmentmain.findById(req.params.id).populate('category')
     if(!product){
         res.status(500).json({success: false})
     }
@@ -68,7 +95,7 @@ router.get(`/`, async (req,res)=>{
 
  router.get('/user/:id',async(req, res)=>{
     console.log(req.params.id)
-    const userItems=await Shops.find({author:req.params.id}).populate("category").sort({ dateCreated: -1 })
+    const userItems=await Equipmentmain.find({author:req.params.id}).populate("category").sort({ dateCreated: -1 })
 
     // res.send({success:'true',userItems})
     res.send(userItems)
@@ -77,7 +104,7 @@ router.get(`/`, async (req,res)=>{
 
 router.get('/get/count', async (req, res) => {
   try {
-    const productCount = await Shops.countDocuments();
+    const productCount = await Equipmentmain.countDocuments();
     res.json(productCount);
   } catch (error) {
     console.error(error);
@@ -92,7 +119,7 @@ router.get('/products/:productId', async (req, res) => {
 
   try {
     // Find the product by ID
-    const product = await Shops.findById(productId);
+    const product = await Equipmentmain.findById(productId);
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -112,6 +139,35 @@ router.get('/products/:productId', async (req, res) => {
   }
 });
 
+router.get('/region/central', async (req, res) => {
+  try {
+    const accraProducts = await Equipmentmain.find({ region: 'Central' }).populate("category").sort({ dateCreated: -1 });
+
+    if (!accraProducts) {
+      return res.status(404).json({ message: 'No products found with region set to "accra"' });
+    }
+
+    res.json(accraProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.get('/region/accra', async (req, res) => {
+  try {
+    const accraProducts = await Equipmentmain.find({ region: 'Accra' }).populate("category").sort({ dateCreated: -1 });
+
+    if (!accraProducts) {
+      return res.status(404).json({ message: 'No products found with region set to "accra"' });
+    }
+
+    res.json(accraProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 // Create a new product with image upload
 router.post('/', upload.fields([
@@ -125,11 +181,10 @@ router.post('/', upload.fields([
         price,
         description,
         location,
-        region,
         whatsapp,
+        region,
         town,
-        category
-        } = req.body;
+        category} = req.body;
   
       // Check if picture is present in the request
       const picture = req.files['picture'][0].path;
@@ -142,13 +197,13 @@ router.post('/', upload.fields([
       const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
   
       // Create a new product instance
-      const newProduct = new Shops({
+      const newProduct = new Equipmentmain({
         name,
         phone,
         price,
+        whatsapp,
         description,
         location,
-        whatsapp,
         region,
         town,
         category,
@@ -176,7 +231,7 @@ router.post('/', upload.fields([
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, description, region, town, phone, location, price,whatsapp,category } = req.body;
+      const { name, description, region, town, phone, location, price, category,whatsapp, } = req.body;
       const carId = req.params.id;
   
       // Check if pictures are present in the request
@@ -192,7 +247,7 @@ router.post('/', upload.fields([
       const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
   
       // Find and update the existing car
-      const updatedCar = await Shops.findByIdAndUpdate(
+      const updatedCar = await Equipmentmain.findByIdAndUpdate(
         carId,
         {
           name,
@@ -222,7 +277,7 @@ router.put('/:id/approve', async (req, res) => {
   const productId = req.params.id;
 
   try {
-    const product = await Shops.findByIdAndUpdate(productId, { approved: true }, { new: true });
+    const product = await Equipmentmain.findByIdAndUpdate(productId, { approved: true }, { new: true });
 
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
@@ -240,14 +295,14 @@ router.put('/:id/boost', async (req, res) => {
 
   try {
     // Find the product by ID and update its boost field to true
-    const product = await Shops.findByIdAndUpdate(productId, { boost: true, dateCreated: Date.now() }, { new: true });
+    const product = await Equipmentmain.findByIdAndUpdate(productId, { boost: true, dateCreated: Date.now() }, { new: true });
 
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
     // Fetch all approved products, sorting by the boost field in descending order
-    const allApprovedProducts = await Shops.find({ approved: true }).sort({ boost: -1, dateCreated: -1 });
+    const allApprovedProducts = await Equipmentmain.find({ approved: true }).sort({ boost: -1, dateCreated: -1 });
 
     res.json(allApprovedProducts);
   } catch (error) {
@@ -260,7 +315,7 @@ router.put('/:id/deactivate', async (req, res) => {
   const productId = req.params.id;
 
   try {
-    const product = await Shops.findByIdAndUpdate(productId, { approved: false }, { new: true });
+    const product = await Equipmentmain.findByIdAndUpdate(productId, { approved: false }, { new: true });
 
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
@@ -274,7 +329,7 @@ router.put('/:id/deactivate', async (req, res) => {
 });
 
  router.delete("/:id",(req, res)=>{
-   Shops.findByIdAndRemove(req.params.id).then(product=>{
+    Equipmentmain.findByIdAndRemove(req.params.id).then(product=>{
         if(product){
             return res.status(200).json({success:true, message:"the product is deleted successfully"})
         } else{

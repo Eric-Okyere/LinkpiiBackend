@@ -18,6 +18,8 @@ const Vodafone = require("./routes/Vodafone")
 const Emergency = require("./routes/Emergency")
 const CodeUsers = require("./routes/Codeusers")
 const Fashion = require("./routes/categoriesFashion")
+const Buildingcat = require("./routes/BuildingCats")
+const Building = require("./routes/Building")
 const Fashionpost = require("./routes/Fashion")
 const Services = require("./routes/Services")
 const Okada = require("./routes/Okada")
@@ -29,8 +31,11 @@ const Time = require("./routes/Time")
 const fs = require('fs');
 const Servicescategories = require("./routes/ServicesCategories")
 const Shopscat = require("./routes/ShopsCategories")
-const Shop = require("./routes/Shops")
-
+const Shop = require("./routes/Shops");
+const Rentcarscats = require("./routes/RentcarsCate")
+const RentCar = require("./routes/Rentcar")
+const Equipmentscats = require("./routes/EquipmentsCats")
+const Equipmentmain = require("./routes/EquipmentsMain")
 
 
 
@@ -76,6 +81,13 @@ app.use("/spare", SpareParts);
 app.use("/servcat", Servicescategories);
 app.use("/shopscat", Shopscat);
 app.use("/shops", Shop);
+app.use("/buildingcats", Buildingcat);
+app.use("/buildings", Building)
+app.use("/rentcarcats", Rentcarscats)
+app.use("/rentcar", RentCar)
+app.use("/equipmentcat", Equipmentscats)
+app.use("/equipmentmain", Equipmentmain)
+
 
 
 

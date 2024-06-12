@@ -290,7 +290,7 @@ router.put('/:id/boost', async (req, res) => {
 
   try {
     // Find the product by ID and update its boost field to true
-    const product = await Product.findByIdAndUpdate(productId, { boost: true }, { new: true });
+    const product = await Product.findByIdAndUpdate(productId, { boost: true ,dateCreated: Date.now()}, { new: true });
 
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
@@ -313,7 +313,7 @@ router.put('/:id/approve', async (req, res) => {
   const productId = req.params.id;
 
   try {
-    const product = await Product.findByIdAndUpdate(productId, { approved: true }, { new: true });
+    const product = await Product.findByIdAndUpdate(productId, { approved: true, }, { new: true });
 
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
