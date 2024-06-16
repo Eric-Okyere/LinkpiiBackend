@@ -236,7 +236,7 @@ router.post('/', upload.fields([
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, description, region, town, phone, location, price, category,whatsapp, } = req.body;
+      const { name, description, region, town, phone, location, price, category,whatsapp,amenities } = req.body;
       const carId = req.params.id;
   
       // Check if pictures are present in the request
@@ -252,7 +252,7 @@ router.post('/', upload.fields([
       const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
   
       // Find and update the existing car
-      const updatedCar = await Buildings.findByIdAndUpdate(
+      const updatedBuilding = await Buildings.findByIdAndUpdate(
         carId,
         {
           name,
@@ -264,14 +264,14 @@ router.post('/', upload.fields([
           town,
           phone,
           location,
-          category,
+          category,amenities,
           picture: cloudinaryResult.secure_url,
           picturesec: cloudinaryRe.secure_url,
         },
         { new: true }
       );
   
-      res.json(updatedCar);
+      res.json(updatedBuilding);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Internal Server Error' });
