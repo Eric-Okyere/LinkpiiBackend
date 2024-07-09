@@ -62,7 +62,11 @@ const SParepartsSchema = mongoose.Schema({
   boost: {
     type: Boolean,
     default: false
-  }
+  },
+  comments: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Comment'
+  }]
 });
 
 SParepartsSchema.set('toJSON', {

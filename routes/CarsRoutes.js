@@ -220,6 +220,24 @@ router.put('/:id/approvecar', async (req, res) => {
 });
 
 
+router.put('/:id/deactivate', async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    const product = await Car.findByIdAndUpdate(productId, { approved: false }, { new: true });
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Car not found' });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 
 router.delete("/:id",(req, res)=>{
   Car.findByIdAndRemove(req.params.id).then(user=>{

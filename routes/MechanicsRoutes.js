@@ -218,6 +218,24 @@ router.put('/:id/approve', async (req, res) => {
   }
 });
 
+router.put('/:id/deactivate', async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    const product = await Mechanics.findByIdAndUpdate(productId, { approved: false }, { new: true });
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Shop not found' });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
  router.delete("/:id",(req, res)=>{
     Mechanics.findByIdAndRemove(req.params.id).then(user=>{
         if(user){

@@ -34,10 +34,6 @@ router.get('/get/count', async (req, res) => {
   router.post('/', async (req, res) => {
     const { sendername, senderphone, product, productphone, complaint } = req.body;
   
-    // if (!sendername || !senderphone || !product || !productphone || !complaint) {
-    //   return res.status(400).json({ message: "All fields are required" });
-    // }
-  
     const newComplaint = new Complaints({
       sendername,
       senderphone,

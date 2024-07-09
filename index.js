@@ -45,7 +45,13 @@ const Complaints = require("./routes/Compliants/Complaints")
 const ShopComments = require("./routes/Coments/ShopComments")
 const Agriccomment = require("./routes/Coments/Agriccomment")
 const Drivercomment = require("./routes/Coments/DriverComment")
+const Mechaniccomment = require("./routes/Coments/MechanicComment")
 const Okadacomment = require("./routes/Coments/OkadaComment")
+const Sparecomment = require("./routes/Coments/Sparepartscomments")
+const Buildingcomment = require("./routes/Coments/BuildingComment")
+const rentCarcomment = require("./routes/Coments/CarRentComment")
+const Equipmentcomment = require("./routes/Coments/EquipmentCommet")
+
 
 // Replace this line
 // const bcrypt = require('bcrypt');
@@ -113,6 +119,11 @@ app.use("/shopcomment", ShopComments);
 app.use("/agriccomment", Agriccomment);
 app.use("/drivercomment", Drivercomment);
 app.use("/okadacomment", Okadacomment);
+app.use("/mechanicscomment", Mechaniccomment);
+app.use("/sparecomment", Sparecomment);
+app.use("/buidingcomment", Buildingcomment);
+app.use("/rentcarcomment", rentCarcomment);
+app.use("/equipmentcomment", Equipmentcomment);
 
 const PORT = process.env.PORT || 3000;
 
