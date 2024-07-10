@@ -8,10 +8,6 @@ const { isValidObjectId } = require('mongoose');
 const resetToken = require('../models/resetToken');
 
 exports.getUsers = async (req,res)=>{
-  // let filter = {};
-  // if(req.query.category){
-  //     filter = {category: req.query.category.split(',')}
-  // }
   const productList = await User.find().sort({ dateCreated: -1 })
   if(!productList){
       res.status(500).json({success: false})
@@ -243,3 +239,29 @@ exports.Rectified = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+exports.EULA = async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    const product = await User.findByIdAndUpdate(productId, { eulaAccepted: true }, { new: false });
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// exports.EULA = async (req, res) => {
+//   const productId  = req.body;
+//   try {
+//     await User.findByIdAndUpdate(productId, { eulaAccepted: true });
+//     res.send('EULA accepted');
+//   } catch (err) {
+//     res.status(400).send('Error accepting EULA');
+//   }
+// };

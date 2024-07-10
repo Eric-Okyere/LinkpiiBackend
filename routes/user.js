@@ -11,7 +11,8 @@ const {
   getUserById,
   userCount,
   Report,
-  Rectified
+  Rectified,
+  EULA
 } = require('../controllers/user');
 
 const {
@@ -29,6 +30,7 @@ router.get("/getUsers/count", userCount)
 router.delete("/deleteUser/:id",deleteUser)
 router.put('/:id/report', Report);
 router.put('/:id/rectify', Rectified);
+router.put('/:id/eula', EULA);
 
 router.post('/create-user', 
 validateUserSignUp,

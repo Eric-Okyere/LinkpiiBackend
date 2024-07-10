@@ -51,7 +51,11 @@ const userSchema = new mongoose.Schema({
   type:Date, 
   default: Date.now 
 },
-
+eulaAccepted: {
+  type: Boolean,
+  default: false,
+  
+}
 
 });
 

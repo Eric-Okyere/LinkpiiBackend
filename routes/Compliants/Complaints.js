@@ -54,9 +54,9 @@ router.get('/get/count', async (req, res) => {
 router.delete("/:id",(req, res)=>{
     Complaints.findByIdAndRemove(req.params.id).then(user=>{
         if(user){
-            return res.status(200).json({success:true, message:"the call is deleted successfully"})
+            return res.status(200).json({success:true, message:"the report is deleted successfully"})
         } else{
-            return res.status(404).json({success: false, message: "call not found"})
+            return res.status(404).json({success: false, message: "report not found"})
         }
     }).catch(err=>{
         return res.status(400).json({success: false, error: err})
