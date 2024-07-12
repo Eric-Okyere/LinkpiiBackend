@@ -55,6 +55,11 @@ eulaAccepted: {
   type: Boolean,
   default: false,
   
+},
+eulaProductAccepted: {
+  type: Boolean,
+  default: false,
+  
 }
 
 });
