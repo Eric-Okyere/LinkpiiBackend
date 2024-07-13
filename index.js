@@ -51,6 +51,7 @@ const Sparecomment = require("./routes/Coments/Sparepartscomments")
 const Buildingcomment = require("./routes/Coments/BuildingComment")
 const rentCarcomment = require("./routes/Coments/CarRentComment")
 const Equipmentcomment = require("./routes/Coments/EquipmentCommet")
+const commentRoute = require("./routes/Coments/commentRoute")
 
 
 // Replace this line
@@ -124,8 +125,11 @@ app.use("/sparecomment", Sparecomment);
 app.use("/buidingcomment", Buildingcomment);
 app.use("/rentcarcomment", rentCarcomment);
 app.use("/equipmentcomment", Equipmentcomment);
+app.use('/toxic', commentRoute);
 
 const PORT = process.env.PORT || 3000;
+
+
 
 mongoose.connect(process.env.CONNECTION_STRING, {
   useNewUrlParser: true,
