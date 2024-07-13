@@ -163,7 +163,7 @@ router.put('/:id', upload.fields([
 ]), async (req, res) => {
   try {
     // Extract data from the request
-    const { name, location, carnum, region, town, phone, card,whatsapp } = req.body;
+    const { name, location, carnum, region, town, phone, card,whatsapp, size } = req.body;
     const carId = req.params.id;
 
     // Check if pictures are present in the request
