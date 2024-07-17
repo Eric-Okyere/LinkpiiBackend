@@ -166,15 +166,29 @@ res.json({
 
 }
 
-exports.getUserById= async(req, res)=>{
- 
-    const auser = await User.findById(req.params.id)
-    if(!auser){
-        res.status(500).json({success: false})
+
+
+exports.getUserById = async (req, res) => {
+  const userId = req.params.id;
+
+  if (!isValidObjectId(userId)) {
+    return res.status(400).json({ success: false, message: 'Invalid user ID' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
-    res.send(auser)
- 
-}
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
 
 exports.forgotPassword = async(req, res)=>{
 
