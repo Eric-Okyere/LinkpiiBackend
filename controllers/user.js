@@ -181,7 +181,7 @@ exports.getUserById = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    res.json({ success: true, user });
+    res.json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
