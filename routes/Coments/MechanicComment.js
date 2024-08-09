@@ -1,6 +1,6 @@
 const express = require('express');
 const { Comment } = require('../../models/comment/comment');
-const { Mechanics } = require('../../models/Mechanics/Mechanicsmodel');
+const { Product } = require('../../models/products/Newmech');
 
 
 
@@ -15,7 +15,7 @@ router.post('/:productId/comments', async (req, res) => {
     const comment = new Comment({ user: userId, content });
     await comment.save();
 
-    const product = await Mechanics.findById(productId);
+    const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
@@ -34,7 +34,7 @@ router.get('/comments/:productId', async (req, res) => {
   const { productId } = req.params;
 
   try {
-    const product = await Mechanics.findById(productId).populate({
+    const product = await Product.findById(productId).populate({
       path: 'comments',
       options: { sort: { dateCreated: -1 } },
       populate: {
@@ -87,7 +87,7 @@ router.delete('/comments/:commentId', async (req, res) => {
     }
 
   
-    const product = await Mechanics.findOneAndUpdate(
+    const product = await Product.findOneAndUpdate(
       { comments: commentId },
       { $pull: { comments: commentId } }
     );

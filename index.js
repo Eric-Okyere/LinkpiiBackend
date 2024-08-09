@@ -52,6 +52,10 @@ const Buildingcomment = require("./routes/Coments/BuildingComment")
 const rentCarcomment = require("./routes/Coments/CarRentComment")
 const Equipmentcomment = require("./routes/Coments/EquipmentCommet")
 const commentRoute = require("./routes/Coments/commentRoute")
+const Uploadpdfs = require("./routes/UploadFiles")
+const Mechanicscats = require("./routes/Mechaniccates")
+const Newmech = require("./routes/newmechcats")
+const Newmechmain = require("./routes/Newmech")
 
 
 // Replace this line
@@ -126,6 +130,11 @@ app.use("/buidingcomment", Buildingcomment);
 app.use("/rentcarcomment", rentCarcomment);
 app.use("/equipmentcomment", Equipmentcomment);
 app.use('/toxic', commentRoute);
+app.use("/uploadfile", Uploadpdfs)
+app.use("/mechcates", Mechanicscats)
+app.use("/newmech", Newmech )
+app.use("/newmechmain", Newmechmain )
+app.use("/files", express.static("files"))
 
 const PORT = process.env.PORT || 3000;
 

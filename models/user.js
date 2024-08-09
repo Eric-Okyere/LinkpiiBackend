@@ -25,14 +25,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-
   products:[{
-    
         type: mongoose.Schema.Types.ObjectId,
         ref: "employee",
-    
 }],
-
  avatar:{
   type: String,
   default:""
@@ -68,7 +64,6 @@ userSchema.pre('save', function (next) {
   if (this.isModified('password')) {
     bcrypt.hash(this.password, 4, (err, hash) => {
       if (err) return next(err);
-
       this.password = hash;
       next();
     });

@@ -5,6 +5,10 @@ const MechanicsSchema = mongoose.Schema({
     type: String,
     require: true
   },
+  fullname: {
+    type: String,
+    require: true
+  },
   services: {
     type: String,
     require: true
@@ -13,9 +17,18 @@ const MechanicsSchema = mongoose.Schema({
     type: String,
     require: true
   },
+  card: {
+    type: String,
+    require: true
+  },
   town: {
     type: String,
     require: true
+  },
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'mechanicscats',
+    required: true
   },
   whatsapp: {
     type: String,
@@ -34,15 +47,18 @@ const MechanicsSchema = mongoose.Schema({
     type: String,
     default: ""
   },
-  servpic: {
+  propicture: {
     type: String,
     default: ""
   },
+  // servpic: {
+  //   type: String,
+  //   default: ""
+  // },
   views: {
     type: String,
     default: 6
   },
-  
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
   dateCreated: {
     type: Date,

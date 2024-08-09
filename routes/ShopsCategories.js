@@ -90,7 +90,36 @@ router.post('/', upload.single('picture'), async (req, res) => {
 });
 
 
+router.put('/:id', upload.single('picture'), async (req, res) => {
+  try {
+      const { name } = req.body;
+      let pictureUrl = '';
 
+      if (req.file) {
+          const picture = req.file.path;
+          const cloudinaryResult = await cloudinary.uploader.upload(picture);
+          pictureUrl = cloudinaryResult.secure_url;
+      }
+
+      const updatedProduct = await Shops.findByIdAndUpdate(
+          req.params.id,
+          {
+              name,
+              picture: pictureUrl ? pictureUrl : undefined,
+          },
+          { new: true, runValidators: true }
+      );
+
+      if (!updatedProduct) {
+          return res.status(404).json({ success: false, message: "Product not found" });
+      }
+
+      res.json(updatedProduct);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
  
 
  router.delete("/:id",(req, res)=>{

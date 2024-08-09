@@ -35,7 +35,7 @@ cloudinary.config({
 
 router.get(`/`, async (req,res)=>{
   
-    const productList = await Mechanics.find().sort({ dateCreated: -1 })
+    const productList = await Mechanics.find().populate("category").sort({ dateCreated: -1 })
     if(!productList){
         res.status(500).json({success: false})
     }
@@ -91,34 +91,40 @@ router.get('/get/count', async (req, res) => {
 
 router.post('/', upload.fields([
     { name: 'picture', maxCount: 1 },
+    { name: 'propicture', maxCount: 1 }
    
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, location, services, region, town, phone,whatsapp,} = req.body;
+      const { name, location, services, region, town, phone,whatsapp,card, fullname, category} = req.body;
   
       // Check if picture is present in the request
       const picture = req.files['picture'][0].path;
+      const propicture = req.files['propicture'][0].path;
       
   
   
   
       // Upload image to Cloudinary
       const cloudinaryResult = await cloudinary.uploader.upload(picture);
+      const procloudinaryResult = await cloudinary.uploader.upload(propicture);
       // const cloudinaryRe = await cloudinary.uploader.upload(servpic);
   
       // Create a new product instance
       const newProduct = new Mechanics({
         name,
         location,
+        fullname,
         services,
+        card,
         region,
+        category,
         town,
         whatsapp,
         phone,
         author: req.body.userId,
         picture: cloudinaryResult.secure_url,
-        // servpic: cloudinaryRe.secure_url,
+        propicture: procloudinaryResult.secure_url,
       });
   
       // Save the product to the database
@@ -162,19 +168,21 @@ router.post('/', upload.fields([
   // Edit an existing car
   router.put('/:id', upload.fields([
     { name: 'picture', maxCount: 1 },
-    // { name: 'servpic', maxCount: 1 },
+    { name: 'propicture', maxCount: 1 },
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, location, services, region, town, phone,whatsapp, } = req.body;
+      const { name, location, services, region, town, phone,whatsapp, card, fullname, category } = req.body;
       const carId = req.params.id;
   
       // Check if pictures are present in the request
       const picture = req.files['picture'][0].path;
+      const propicture = req.files['propicture'][0].path;
       // const servpic = req.files['servpic'][0].path;
   
       // Upload images to Cloudinary
       const cloudinaryResult = await cloudinary.uploader.upload(picture);
+      const procloudinaryResult = await cloudinary.uploader.upload(propicture);
       // const cloudinaryRe = await cloudinary.uploader.upload(servpic);
   
       // Find and update the existing car
@@ -182,13 +190,18 @@ router.post('/', upload.fields([
         carId,
         {
           name,
+          fullname,
           location,
+          category,
           services,
           whatsapp,
+          category,
           region,
+          card,
           town,
           phone,
          picture: cloudinaryResult.secure_url,
+         propicture: procloudinaryResult.secure_url,
           // servpic: cloudinaryRe.secure_url,
         },
         { new: true }

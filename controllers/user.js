@@ -4,8 +4,42 @@ const verificationToken = require('../models/verificationToken');
 const { sendError, createRandomBytes } = require('../utils/helpers');
 const { generateOTP, mailTransprot } = require('../utils/mail');
 const { isValidObjectId } = require('mongoose');
+const { OAuth2Client } = require('google-auth-library');
 
 const resetToken = require('../models/resetToken');
+
+
+
+
+
+
+const CLIENT_ID = '450195054535-j1v4j3vcg8rtl0oek01n1g7nkto7c7vc.apps.googleusercontent.com';
+const client = new OAuth2Client(CLIENT_ID);
+
+exports.googleSignin = async (req, res) => {
+  const { idToken } = req.body;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const userId = payload['sub'];
+
+    // Here, you can create or update the user in your database
+    res.json({ success: true, userId, email: payload.email });
+  } catch (error) {
+    console.error('Error verifying ID token:', error);
+    res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+
+
+
+
 
 exports.getUsers = async (req,res)=>{
   const productList = await User.find().sort({ dateCreated: -1 })
