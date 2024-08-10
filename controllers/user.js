@@ -82,13 +82,14 @@ exports.deleteUser = async (req, res) => {
 
 
 exports.createUser = async (req, res) => {
-  const { name, email, password,phone } = req.body;
+  const { name, email, password,phone, lastname } = req.body;
   const user = await User.findOne({email});
   if (user)
     return sendError(res, "This email is already in use, try sign-in")
 
   const newUser = await User({
     name,
+    lastname,
     email,
     phone,
     password,
@@ -105,15 +106,15 @@ const OTP = generateOTP()
   await verif.save();
   await newUser.save();
 
-mailTransprot().sendMail({
-  from:"emailverification@gmail.com",
-  to: newUser.email,
-  subject:"verify your email account",
-  html: `<h1> Please verify your email with this code ${OTP}</h1>`
-})
+// mailTransprot().sendMail({
+//   from:"emailverification@gmail.com",
+//   to: newUser.email,
+//   subject:"verify your email account",
+//   html: `<h1> Please verify your email with this code ${OTP}</h1>`
+// })
 
   res.json({ success: true, user:{
-    name: newUser.name, email: newUser.email, phoneno:newUser.phone, id: newUser._id, verified: newUser.verified
+    name: newUser.name, lastname:newUser.lastname, email: newUser.email, phoneno:newUser.phone, id: newUser._id, verified: newUser.verified
   } });
 };
 
