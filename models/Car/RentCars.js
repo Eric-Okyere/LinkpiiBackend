@@ -5,6 +5,14 @@ const RentcarSchema = mongoose.Schema({
     type: String,
     require: true
   },
+  drivername: {
+    type: String,
+     default: ""
+  },
+  card: {
+    type: String,
+     default: ""
+  },
   description: {
     type: String,
     require: true

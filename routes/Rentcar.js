@@ -185,6 +185,8 @@ router.post('/', upload.fields([
         whatsapp,
         region,
         town,
+        drivername,
+        card,
         category} = req.body;
   
       // Check if picture is present in the request
@@ -201,6 +203,8 @@ router.post('/', upload.fields([
       const newProduct = new Product({
         name,
         phone,
+        card,
+        drivername,
         price,
         whatsapp,
         description,
@@ -232,7 +236,7 @@ router.post('/', upload.fields([
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, description, region, town, phone, location, price, category,whatsapp, } = req.body;
+      const { name, description, region, town, phone, location, price, category,whatsapp, card, drivername} = req.body;
       const carId = req.params.id;
   
       // Check if pictures are present in the request
@@ -254,6 +258,8 @@ router.post('/', upload.fields([
           name,
           description,
           region,
+          drivername,
+          card,
           price,
           whatsapp,
           town,

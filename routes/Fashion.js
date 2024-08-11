@@ -36,7 +36,7 @@ const upload = multer({ storage: storage });
 
 router.get(`/`, async (req,res)=>{
   
-    const productList = await Product.find().populate("category").sort({ dateCreated: -1 })
+    const productList = await Product.find().populate("category").populate("author").sort({ dateCreated: -1 })
     if(!productList){
         res.status(500).json({success: false})
     }
@@ -181,6 +181,7 @@ router.post('/', upload.fields([
         phone,
         price,
         description,
+        condition,
         location,
         whatsapp,
         region,
@@ -201,6 +202,7 @@ router.post('/', upload.fields([
       const newProduct = new Product({
         name,
         phone,
+        condition,
         price,
         whatsapp,
         description,
@@ -254,6 +256,7 @@ router.post('/', upload.fields([
           name,
           description,
           region,
+          condition,
           price,
           whatsapp,
           town,

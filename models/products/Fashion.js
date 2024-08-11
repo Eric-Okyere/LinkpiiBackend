@@ -9,6 +9,10 @@ const EmployeeSchema = mongoose.Schema({
     type: String,
     require: true
   },
+  condition: {
+    type: String,
+    require: true
+  },
   region: {
     type: String,
     require: true
