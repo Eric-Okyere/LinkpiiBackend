@@ -207,33 +207,46 @@ router.get('/region/kumasi', async (req, res) => {
 
  
 
-// Create a new product with image upload
-router.post('/', upload.single('picture'), async (req, res) => {
+router.post('/', upload.fields([
+  { name: 'picture', maxCount: 1 },
+  { name: 'picturesec', maxCount: 1 },
+]), async (req, res) => {
   try {
     // Extract data from the request
-    const { name, description, region, whatsapp, town, location, category, phone, price } = req.body;
+    const {  name,
+      phone,
+      price,
+      description,
+      location,
+      whatsapp,
+      region,
+      town,
+      category} = req.body;
 
     // Check if picture is present in the request
-    const picture = req.file ? req.file.path : '';
+    const picture = req.files['picture'][0].path;
+    const picturesec = req.files['picturesec'][0].path;
 
 
 
     // Upload image to Cloudinary
     const cloudinaryResult = await cloudinary.uploader.upload(picture);
+    const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
 
     // Create a new product instance
     const newProduct = new Product({
       name,
-      description,
-      region,
-      town,
-      location,
-      whatsapp,
-      category,
       phone,
       price,
+      whatsapp,
+      description,
+      location,
+      region,
+      town,
+      category,
       author: req.body.userId,
       picture: cloudinaryResult.secure_url,
+      picturesec: cloudinaryRe.secure_url,
     });
 
     // Save the product to the database
@@ -248,36 +261,48 @@ router.post('/', upload.single('picture'), async (req, res) => {
 
 
 
-router.put('/:id', upload.single('picture'), async (req, res) => {
+
+router.put('/:id', upload.fields([
+  { name: 'picture', maxCount: 1 },
+  { name: 'picturesec', maxCount: 1 },
+]), async (req, res) => {
   try {
     // Extract data from the request
-    const { name, description, whatsapp, region, town, location, category, phone, price } = req.body;
-    
-    // Check if a file was provided with the request
-    let pictureUrl = '';
-    if (req.file) {
-      // Upload image to Cloudinary
-      const cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
-      pictureUrl = cloudinaryResult.secure_url;
+    const { name, description, region, town, phone, location, price, category,whatsapp, } = req.body;
+    const carId = req.params.id;
+
+    // Check if pictures are present in the request
+    const picture = req.files['picture'] ? req.files['picture'][0].path : null;
+    const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
+
+    if (!picture || !picturesec) {
+      return res.status(400).json({ error: 'Please upload both pictures' });
     }
 
-    // Find the product by ID and update its fields
-    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, {
-      name,
-      description,
-      region,
-      whatsapp,
-      town,
-      location,
-      category,
-      phone,
-      price,
-      whatsapp,
-      picture: pictureUrl // Assign the Cloudinary URL to the picture field
-    }, { new: true });
+    // Upload images to Cloudinary
+    const cloudinaryResult = await cloudinary.uploader.upload(picture);
+    const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
 
-    // Return the updated product
-    res.json(updatedProduct);
+    // Find and update the existing car
+    const updatedCar = await Product.findByIdAndUpdate(
+      carId,
+      {
+        name,
+        description,
+        region,
+        price,
+        whatsapp,
+        town,
+        phone,
+        location,
+        category,
+        picture: cloudinaryResult.secure_url,
+        picturesec: cloudinaryRe.secure_url,
+      },
+      { new: true }
+    );
+
+    res.json(updatedCar);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
