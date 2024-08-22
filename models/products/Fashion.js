@@ -70,7 +70,12 @@ const EmployeeSchema = mongoose.Schema({
   comments: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment'
-  }]
+  }],
+  commentsec: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Comment'
+  }],
+ 
 });
 
 EmployeeSchema.set('toJSON', {

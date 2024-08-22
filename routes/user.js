@@ -14,7 +14,7 @@ const {
   Rectified,
   EULA,
   EULAPost,
-  googleSignin
+  googleSignin,
 } = require('../controllers/user');
 
 const {
@@ -44,6 +44,8 @@ router.post('/auth/google', googleSignin);
 router.post('/sign-in', userSignIn);
 router.post('/verify-email', verifyEmail);
 router.post('/forgot-password', forgotPassword);
+
+
 
 
 module.exports = router;

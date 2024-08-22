@@ -27,7 +27,7 @@ const Building = require("./routes/Building");
 const Fashionpost = require("./routes/Fashion");
 const Services = require("./routes/Services");
 const Okada = require("./routes/Okada");
-const SpareParts = require("./routes/SpareParts");
+// const SpareParts = require("./routes/SpareParts");
 const MechanicsRoutes = require("./routes/MechanicsRoutes");
 const Call = require("./routes/call");
 const Whatsapp = require("./routes/Whatsapp");
@@ -56,7 +56,12 @@ const Uploadpdfs = require("./routes/UploadFiles")
 const Mechanicscats = require("./routes/Mechaniccates")
 const Newmech = require("./routes/newmechcats")
 const Newmechmain = require("./routes/Newmech")
-
+const userIdcard = require("./routes/UserIdcard")
+const Sparepartscats = require("./routes/SparepartsnewCats")
+const Sparepartsmainpost = require("./routes/SparepartmainPost")
+const fashionViewers = require("./routes/Coments/FashionViewers")
+const Shopviwersec = require("./routes/Coments/Shopcommentsec")
+const Productviwers = require("./routes/Coments/ProductViewers")
 
 // Replace this line
 // const bcrypt = require('bcrypt');
@@ -107,7 +112,7 @@ app.use("/call", Call);
 app.use("/whatsapp", Whatsapp);
 app.use("/services", Services);
 app.use("/okada", Okada);
-app.use("/spare", SpareParts);
+// app.use("/spare", SpareParts);
 app.use("/servcat", Servicescategories);
 app.use("/shopscat", Shopscat);
 app.use("/shops", Shop);
@@ -135,6 +140,14 @@ app.use("/mechcates", Mechanicscats)
 app.use("/newmech", Newmech )
 app.use("/newmechmain", Newmechmain )
 app.use("/files", express.static("files"))
+app.use("/card", userIdcard)
+app.use("/sparecatnew", Sparepartscats)
+app.use("/sparepartsmainpost", Sparepartsmainpost)
+app.use("/viewers", fashionViewers)
+app.use("/shopviewers", Shopviwersec)
+app.use("/productviewers", Productviwers)
+
+
 
 const PORT = process.env.PORT || 3000;
 

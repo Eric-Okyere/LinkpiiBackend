@@ -5,8 +5,21 @@ const { sendError, createRandomBytes } = require('../utils/helpers');
 const { generateOTP, mailTransprot } = require('../utils/mail');
 const { isValidObjectId } = require('mongoose');
 const { OAuth2Client } = require('google-auth-library');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require("cloudinary").v2
+
 
 const resetToken = require('../models/resetToken');
+
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+
+
 
 
 
@@ -322,12 +335,40 @@ exports.EULAPost = async (req, res) => {
   }
 };
 
-// exports.EULA = async (req, res) => {
-//   const productId  = req.body;
-//   try {
-//     await User.findByIdAndUpdate(productId, { eulaAccepted: true });
-//     res.send('EULA accepted');
-//   } catch (err) {
-//     res.status(400).send('Error accepting EULA');
-//   }
-// };
+
+exports.updateUserPicture = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Check if a valid user ID is provided
+    if (!isValidObjectId(userId)) {
+      return res.status(400).json({ success: false, message: 'Invalid user ID' });
+    }
+
+    // Check if a file is provided
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No picture file provided' });
+    }
+
+    // Upload the image to Cloudinary and get the secure URL
+    const picture = req.file.path;
+    const cloudinaryResult = await cloudinary.uploader.upload(picture);
+    const pictureUrl = cloudinaryResult.secure_url;
+
+    // Update the user's picture in the database
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { picture: pictureUrl },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({ success: true, message: 'User picture updated successfully', user: updatedUser });
+  } catch (error) {
+    console.error('Error updating user picture:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};

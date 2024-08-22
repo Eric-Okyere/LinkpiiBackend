@@ -66,6 +66,14 @@ const ShopSchema = mongoose.Schema({
   comments: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment'
+  }],
+  commentsec: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Comment'
+  }],
+  viewers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Shopviewers'
   }]
 });
 

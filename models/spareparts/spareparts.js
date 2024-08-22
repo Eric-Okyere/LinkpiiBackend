@@ -25,11 +25,11 @@ const SParepartsSchema = mongoose.Schema({
     type: String,
     require: true
   },
-//   category: {
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: 'CategoryFashion',
-//     required: true
-//   },
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SparePartCats',
+    require:true
+  },
   phone: {
     type: String,
     require: true

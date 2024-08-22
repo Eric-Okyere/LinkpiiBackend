@@ -19,12 +19,12 @@
         'arse', 'bollocks', 'bugger', 'wanker', 'tosser', 'plonker', 'div', 'knobhead', 
         'spaz', 'sod', 'daft', 'dope', 'nut', 'divvy', 'berk', 'pillock', 'wazzock', 
         'nob', 'prat', 'minger', 'pleb', 'nonce', 'bint', 'slag', 'ponce', 'chav', 'tart', 
-        'dick', 'knob', 'spanner', 'yob', 'balls', 'bloody', 'shite', 'shitehawk', 
+        'dick', 'knob', 'yob', 'balls', 'bloody', 'shite', 'shitehawk', 
         'wonk', 'dipstick', 'smeghead', 'shitbag', 'fuckface', 'butthead', 'dickwad', 
         'cocksman', 'twathead', 'assmaster', 'shitlicker', 'bitchtits', 'buttmunch', 
         'cockmonger', 'assmonkey', 'shitlord', 'dickhole', 'cockwaffle', 'fucknugget', 
         'shitheel', 'cockgobbler', 'fartknocker', 'shitsack', 'fuckbucket', 'fuckstick', 
-        'assfuck', 'shitass', 'fuckballs', 'shitbrain', 'fuckbrain', 'shitstain', 
-        'cockstain', 'shitbird', 'fuckwad', 'dickbag', 'cockmuncher', 'shitbrain', "wee", "dic"
+        'assfuck', 'shitass', 'fuckballs', 'fuckbrain', 'shitstain', 
+        'cockstain', 'shitbird', 'fuckwad', 'dickbag', 'cockmuncher', "wee", "dic"
       ];
   

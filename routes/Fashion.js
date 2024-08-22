@@ -36,7 +36,7 @@ const upload = multer({ storage: storage });
 
 router.get(`/`, async (req,res)=>{
   
-    const productList = await Product.find().populate("category").populate("author").sort({ dateCreated: -1 })
+    const productList = await Product.find().populate("category").populate("author").populate("commentsec").sort({ dateCreated: -1 })
     if(!productList){
         res.status(500).json({success: false})
     }
@@ -74,7 +74,7 @@ router.get(`/`, async (req,res)=>{
 
  router.get(`/approved`, async (req, res) => {
   try {
-    const approvedProducts = await Product.find({ approved: true }).populate("category").sort({boost:-1, dateCreated: -1 });
+    const approvedProducts = await Product.find({ approved: true }).populate("category").populate("commentsec").sort({boost:-1, dateCreated: -1 });
 
     res.json(approvedProducts);
   } catch (error) {

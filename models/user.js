@@ -59,7 +59,10 @@ eulaAccepted: {
 eulaProductAccepted: {
   type: Boolean,
   default: false,
-  
+},
+picture:{
+  type: String,
+    default:""
 }
 
 });

@@ -1,0 +1,93 @@
+const express = require('express');
+const { Comment } = require('../../models/comment/comment');
+const { Shops } = require('../../models/shops/shops');
+
+
+
+const router = express.Router();
+
+// Add a comment to a product
+router.post('/:productId/comments', async (req, res) => {
+  const { productId } = req.params;
+  const { userId, content } = req.body;
+
+  try {
+    const comment = new Comment({ user: userId, content });
+    await comment.save();
+
+    const product = await Shops.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    product.commentsec.push(comment._id);
+    await product.save();
+
+    res.status(201).json(comment);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+router.get('/comments/:productId', async (req, res) => {
+  const { productId } = req.params;
+
+  try {
+    const product = await Shops.findById(productId).populate({
+      path: 'commentsec',
+      options: { sort: { dateCreated: -1 } },
+      populate: {
+        path: 'user',
+        select: 'name'
+      }
+    })
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+
+
+
+
+router.delete('/:productId/comments/:commentId', async (req, res) => {
+    const { productId, commentId } = req.params;
+  
+    try {
+      // Find the product
+      const product = await Shops.findById(productId);
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+  
+      // Remove the comment reference from the product's commentsec array
+      product.commentsec = product.commentsec.filter(
+        (comment) => comment._id.toString() !== commentId
+      );
+      await product.save();
+  
+      // Delete the comment from the Comment collection
+      await Comment.findByIdAndDelete(commentId);
+  
+      res.status(200).json({ message: 'Comment deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+
+
+
+
+
+
+  module.exports = router;
+  

@@ -4,7 +4,7 @@ const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const {Spare} = require("../models/spareparts/spareparts");
+const {Spare} = require("../models/spareparts/NewSpareParts");
 
 
 
@@ -126,6 +126,7 @@ router.post('/', upload.fields([
         description,
         location,
         region,
+        category,
         whatsapp,
         town,
         } = req.body;
@@ -144,6 +145,7 @@ router.post('/', upload.fields([
       const newProduct = new Spare({
         name,
         phone,
+        category,
         price,
         description,
         whatsapp,
@@ -174,7 +176,7 @@ router.post('/', upload.fields([
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, description, region, town, phone,whatsapp, location, price } = req.body;
+      const { name, description, region, town, phone,whatsapp, location, price, category } = req.body;
       const carId = req.params.id;
   
       // Check if pictures are present in the request
@@ -195,6 +197,7 @@ router.post('/', upload.fields([
         {
           name,
           description,
+          category,
           region,
           price,
           town,
