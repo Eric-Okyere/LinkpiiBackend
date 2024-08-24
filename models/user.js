@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  interested:{
+    type: Boolean,
+    default:false,
+   },
   products:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: "employee",

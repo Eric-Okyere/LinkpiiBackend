@@ -77,31 +77,54 @@ router.put('/comments/:commentId', async (req, res) => {
 
 
   
-router.delete('/comments/:commentId', async (req, res) => {
-  const { commentId } = req.params;
+// router.delete('/comments/:commentId', async (req, res) => {
+//   const { commentId } = req.params;
 
-  try {
-    const comment = await Comment.findById(commentId);
-    if (!comment) {
-      return res.status(404).json({ message: 'Comment not found' });
-    }
+//   try {
+//     const comment = await Comment.findById(commentId);
+//     if (!comment) {
+//       return res.status(404).json({ message: 'Comment not found' });
+//     }
 
   
-    const product = await Product.findOneAndUpdate(
-      { comments: commentId },
-      { $pull: { comments: commentId } }
-    );
+//     const product = await Product.findOneAndUpdate(
+//       { comments: commentId },
+//       { $pull: { comments: commentId } }
+//     );
 
    
-    await Comment.findByIdAndRemove(commentId);
+//     await Comment.findByIdAndRemove(commentId);
 
-    res.json({ success: true, message: 'Comment deleted successfully' });
+//     res.json({ success: true, message: 'Comment deleted successfully' });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+
+router.delete('/:productId/comments/:commentId', async (req, res) => {
+  const { productId, commentId } = req.params;
+
+  try {
+    // Find the product
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Remove the comment reference from the product's commentsec array
+    product.commentsec = product.commentsec.filter(
+      (comment) => comment._id.toString() !== commentId
+    );
+    await product.save();
+
+    // Delete the comment from the Comment collection
+    await Comment.findByIdAndDelete(commentId);
+
+    res.status(200).json({ message: 'Comment deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-
-
 
 
 
