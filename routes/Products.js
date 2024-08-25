@@ -84,6 +84,7 @@ router.get('/approved', async (req, res) => {
       return res.status(500).json({ success: false });
     }
 
+    
     res.send(productList);
   } catch (error) {
     console.error(error);
