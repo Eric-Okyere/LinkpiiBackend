@@ -9,6 +9,7 @@ const {Services} = require("../models/products/services");
 
 
 
+
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -16,17 +17,40 @@ cloudinary.config({
 });
 
 // Configure Multer to use Cloudinary as storage
+
+
 const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'upload', // Specify the folder in Cloudinary where the images will be stored
-      format: 'jpg', // Specify the format of the uploaded file
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    let folder = 'upload';
+
+    if (file.mimetype.startsWith('video')) {
+      return {
+        folder: folder,
+        resource_type: 'video',
+        format: 'mp4',
+        transformation: [
+          { width: 700, height: 360, crop: 'limit' }, // Limit to 640x360 resolution
+          { quality: 'auto:best' }, // Set lower quality for compression
+          { video_codec: 'h264' }, // Use H.264 codec for better compression
+          { bit_rate: '1500k' }, // Limit the bitrate to 500 kbps
+          { audio_codec: 'aac', audio_frequency: 48000 }, // Compress audio as well
+          { duration: "10.0" }
+        ]
+      };
+    }
+
+    return {
+      folder: folder,
+      format: 'jpg',
       transformation: [
-        { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, // Resize and crop the image
-        { quality: 'auto:eco', fetch_format: 'auto' } // Optimize image quality and format
+        { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
+        { quality: 'auto:eco', fetch_format: 'auto' }
       ]
-    },
-  });
+    };
+  },
+});
+
 
 const upload = multer({ storage: storage });
 
@@ -161,57 +185,45 @@ router.get('/products/:productId', async (req, res) => {
 
 // Create a new product with image upload
 router.post('/', upload.fields([
-    { name: 'picture', maxCount: 1 },
-    { name: 'picturesec', maxCount: 1 },
-  ]), async (req, res) => {
-    try {
-      // Extract data from the request
-      const {  name,
-        phone,
-        price,
-        whatsapp,
-        description,
-        location,
-        region,
-        town,
-        category
-        } = req.body;
-  
-      // Check if picture is present in the request
-      const picture = req.files['picture'][0].path;
-      const picturesec = req.files['picturesec'][0].path;
-  
-  
-  
-      // Upload image to Cloudinary
-      const cloudinaryResult = await cloudinary.uploader.upload(picture);
-      const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
-  
-      // Create a new product instance
-      const newProduct = new Services({
-        name,
-        phone,
-        whatsapp,
-        price,
-        description,
-        location,
-        region,
-        town,
-        category,
-        author: req.body.userId,
-        picture: cloudinaryResult.secure_url,
-        picturesec: cloudinaryRe.secure_url,
-      });
-  
-      // Save the product to the database
-      const savedProduct = await newProduct.save();
-  
-      res.json(savedProduct);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+  { name: 'picture', maxCount: 1 },
+  { name: 'picturesec', maxCount: 1 },
+  { name: 'video', maxCount: 1 },
+]), async (req, res) => {
+  try {
+    // Extract data from the request
+    const { name, phone, whatsapp, description, location, region, town, category } = req.body;
+
+    // Check if files are present in the request
+    const picture = req.files['picture'] ? req.files['picture'][0].path : null;
+    const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
+    const video = req.files['video'] ? req.files['video'][0].path : null;
+
+    // Create a new product instance
+    const newProduct = new Services({
+      name,
+      phone,
+      whatsapp,
+      description,
+      location,
+      region,
+      town,
+      category,
+      author: req.body.userId,
+      picture: picture, // Use the path provided by multer
+      picturesec: picturesec, // Use the path provided by multer
+      video: video, // Use the path provided by multer
+    });
+
+    // Save the product to the database
+    const savedProduct = await newProduct.save();
+
+    res.json(savedProduct);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
   
   
   
@@ -222,7 +234,7 @@ router.post('/', upload.fields([
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, description, region, town, phone, location, whatsapp, price,category } = req.body;
+      const { name, description, region, town, phone, location, whatsapp,category } = req.body;
       const carId = req.params.id;
   
       // Check if pictures are present in the request
@@ -244,7 +256,6 @@ router.post('/', upload.fields([
           name,
           description,
           region,
-          price,
           whatsapp,
           town,
           phone,
