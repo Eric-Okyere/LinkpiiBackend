@@ -30,7 +30,7 @@ const storage = new CloudinaryStorage({
         resource_type: 'video',
         format: 'mp4',
         transformation: [
-          { width: 700, height: 360, crop: 'limit' }, // Limit to 640x360 resolution
+          { width: 600, height: 300, crop: 'limit' }, // Limit to 640x360 resolution
           { quality: 'auto:best' }, // Set lower quality for compression
           { video_codec: 'h264' }, // Use H.264 codec for better compression
           { bit_rate: '1500k' }, // Limit the bitrate to 500 kbps
@@ -39,6 +39,7 @@ const storage = new CloudinaryStorage({
         ]
       };
     }
+    // 700x360
 
     return {
       folder: folder,
@@ -228,51 +229,52 @@ router.post('/', upload.fields([
   
   
  
-  router.put('/:id', upload.fields([
-    { name: 'picture', maxCount: 1 },
-    { name: 'picturesec', maxCount: 1 },
-  ]), async (req, res) => {
-    try {
-      // Extract data from the request
-      const { name, description, region, town, phone, location, whatsapp,category } = req.body;
-      const carId = req.params.id;
-  
-      // Check if pictures are present in the request
-      const picture = req.files['picture'] ? req.files['picture'][0].path : null;
-      const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
-  
-      if (!picture || !picturesec) {
-        return res.status(400).json({ error: 'Please upload both pictures' });
-      }
-  
-      // Upload images to Cloudinary
-      const cloudinaryResult = await cloudinary.uploader.upload(picture);
-      const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
-  
-      // Find and update the existing car
-      const updatedCar = await Services.findByIdAndUpdate(
-        carId,
-        {
-          name,
-          description,
-          region,
-          whatsapp,
-          town,
-          phone,
-          location,
-          category,
-          picture: cloudinaryResult.secure_url,
-          picturesec: cloudinaryRe.secure_url,
-        },
-        { new: true }
-      );
-  
-      res.json(updatedCar);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Internal Server Error' });
+router.put('/:id', upload.fields([
+  { name: 'picture', maxCount: 1 },
+  { name: 'picturesec', maxCount: 1 },
+  { name: 'video', maxCount: 1 },
+]), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, phone, whatsapp, description, location, region, town, category } = req.body;
+
+    // Find the shop item by ID
+    const shopItem = await Services.findById(id);
+    if (!shopItem) {
+      return res.status(404).json({ error: 'Shop item not found' });
     }
-  });
+
+    // Update fields
+    shopItem.name = name || shopItem.name;
+    shopItem.phone = phone || shopItem.phone;
+    shopItem.whatsapp = whatsapp || shopItem.whatsapp;
+    shopItem.description = description || shopItem.description;
+    shopItem.location = location || shopItem.location;
+    shopItem.region = region || shopItem.region;
+    shopItem.town = town || shopItem.town;
+    shopItem.category = category || shopItem.category;
+    shopItem.author = req.body.userId || shopItem.author;
+
+    // Update files if new ones are uploaded
+    if (req.files['picture']) {
+      shopItem.picture = req.files['picture'][0].path;
+    }
+    if (req.files['picturesec']) {
+      shopItem.picturesec = req.files['picturesec'][0].path;
+    }
+    if (req.files['video']) {
+      shopItem.video = req.files['video'][0].path;
+    }
+
+    // Save the updated shop item
+    const updatedShopItem = await shopItem.save();
+
+    res.json(updatedShopItem);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
   
 
 router.put('/:id/approve', async (req, res) => {

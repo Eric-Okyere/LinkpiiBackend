@@ -20,6 +20,10 @@ const WhatsappSchema = mongoose.Schema({
         type: String,
         require:true
     }, 
+    pagename:{
+        type:String,
+        default:""
+    },
     recname:{
         type: String,
         require:true

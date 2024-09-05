@@ -46,6 +46,10 @@ const EmployeeSchema = mongoose.Schema({
     type: String,
     default: ""
   },
+  video: {
+    type: String,
+    default: ""
+  },
   price: {
     type: String,
     default: 0

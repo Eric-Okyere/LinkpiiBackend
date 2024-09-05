@@ -15,6 +15,10 @@ const CallSchema = mongoose.Schema({
        type: String,
         require:true
     },
+    pagename:{
+       type: String,
+        default:""
+    },
 
     receiverphone:{
         type: String,

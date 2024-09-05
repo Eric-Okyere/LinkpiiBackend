@@ -26,11 +26,11 @@ router.get('/get/count', async (req, res) => {
 
 
 router.post('/', async (req, res) => {
-    const { name, phone, email, receiverphone, recname } = req.body;
+    const { name, phone, email, receiverphone, recname, pagename } = req.body;
 
     try {
         // Create a new Airtel record
-        const Whatsapper = new Whatsapp({ name, phone, email, receiverphone, recname });
+        const Whatsapper = new Whatsapp({ name, phone, email, receiverphone, recname, pagename });
         
         // Save the Airtel record to the database
         await Whatsapper.save();

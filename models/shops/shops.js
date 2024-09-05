@@ -38,10 +38,6 @@ const ShopSchema = mongoose.Schema({
     type: String,
     default: ""
   },
-  price: {
-    type: String,
-    default: 0
-  },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
   dateCreated: {
     type: Date,
@@ -52,6 +48,10 @@ const ShopSchema = mongoose.Schema({
     default: false
   },
   whatsapp: {
+    type: String,
+    default: ""
+  },
+  video: {
     type: String,
     default: ""
   },
