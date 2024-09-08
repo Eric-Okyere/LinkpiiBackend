@@ -56,14 +56,14 @@ router.get('/advert/count', async (req, res) => {
 router.post('/advert', upload.single('picture'), async (req, res) => {
   try {
     const {name}= req.body;
-    const picture = req.file ? req.file.path : '';
+    const picture = req.file ? req.file.path : null; 
 
-    const cloudinaryResult = await cloudinary.uploader.upload(picture);
+    // const cloudinaryResult = await cloudinary.uploader.upload(picture);
 
     // Create a new product instance
     const newProduct = new Advert({
       name,
-      picture: cloudinaryResult.secure_url,
+      picture: picture,
     });
 
     // Save the product to the database
@@ -75,6 +75,7 @@ router.post('/advert', upload.single('picture'), async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 
 
