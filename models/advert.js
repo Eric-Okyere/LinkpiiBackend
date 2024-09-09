@@ -5,6 +5,14 @@ const Advert = mongoose.Schema({
     type: String,
     default: ""
   },
+  phone:{
+    type:String,
+    default:""
+  },
+  whatsapp:{
+    type:String,
+    default:""
+  },
   picture: {
     type: String,
     default: ""

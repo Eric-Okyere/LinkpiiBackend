@@ -55,7 +55,7 @@ router.get('/advert/count', async (req, res) => {
 // Create a new product with image upload
 router.post('/advert', upload.single('picture'), async (req, res) => {
   try {
-    const {name}= req.body;
+    const {name, phone, whatsapp}= req.body;
     const picture = req.file ? req.file.path : null; 
 
     // const cloudinaryResult = await cloudinary.uploader.upload(picture);
@@ -63,6 +63,8 @@ router.post('/advert', upload.single('picture'), async (req, res) => {
     // Create a new product instance
     const newProduct = new Advert({
       name,
+      phone,
+      whatsapp,
       picture: picture,
     });
 
@@ -75,6 +77,40 @@ router.post('/advert', upload.single('picture'), async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
+router.put('/advert/:id', upload.single('picture'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, phone, whatsapp } = req.body;
+    const picture = req.file ? req.file.path : null;
+
+    // Find the advert by ID
+    let advert = await Advert.findById(id);
+    if (!advert) {
+      return res.status(404).json({ error: 'Advert not found' });
+    }
+
+    // Update the advert details
+    advert.name = name || advert.name;
+    advert.phone = phone || advert.phone;
+    advert.whatsapp = phone || advert.whatsapp;
+
+    // If a new picture is provided, update the picture field
+    if (picture) {
+      advert.picture = picture; 
+    }
+
+    // Save the updated advert to the database
+    const updatedAdvert = await advert.save();
+
+    res.json(updatedAdvert);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 
 
