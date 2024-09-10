@@ -55,7 +55,7 @@ router.get('/advert/count', async (req, res) => {
 // Create a new product with image upload
 router.post('/advert', upload.single('picture'), async (req, res) => {
   try {
-    const {name, phone, whatsapp}= req.body;
+    const {name, phone, whatsapp, author}= req.body;
     const picture = req.file ? req.file.path : null; 
 
     // const cloudinaryResult = await cloudinary.uploader.upload(picture);
@@ -64,6 +64,7 @@ router.post('/advert', upload.single('picture'), async (req, res) => {
     const newProduct = new Advert({
       name,
       phone,
+      author,
       whatsapp,
       picture: picture,
     });
@@ -82,7 +83,7 @@ router.post('/advert', upload.single('picture'), async (req, res) => {
 router.put('/advert/:id', upload.single('picture'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phone, whatsapp } = req.body;
+    const { name, phone, whatsapp, author } = req.body;
     const picture = req.file ? req.file.path : null;
 
     // Find the advert by ID

@@ -13,6 +13,10 @@ const Advert = mongoose.Schema({
     type:String,
     default:""
   },
+  author:{
+    type:String,
+    default:""
+  },
   picture: {
     type: String,
     default: ""
