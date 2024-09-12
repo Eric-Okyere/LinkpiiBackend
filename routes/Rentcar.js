@@ -190,14 +190,15 @@ router.post('/', upload.fields([
         category} = req.body;
   
       // Check if picture is present in the request
-      const picture = req.files['picture'][0].path;
-      const picturesec = req.files['picturesec'][0].path;
+      const picture = req.files['picture'] ? req.files['picture'][0].path : null;
+      const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
+  
   
   
   
       // Upload image to Cloudinary
-      const cloudinaryResult = await cloudinary.uploader.upload(picture);
-      const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
+      // const cloudinaryResult = await cloudinary.uploader.upload(picture);
+      // const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
   
       // Create a new product instance
       const newProduct = new Product({
@@ -213,8 +214,8 @@ router.post('/', upload.fields([
         town,
         category,
         author: req.body.userId,
-        picture: cloudinaryResult.secure_url,
-        picturesec: cloudinaryRe.secure_url,
+        picture: picture,
+        picturesec: picturesec,
       });
   
       // Save the product to the database
@@ -248,8 +249,8 @@ router.post('/', upload.fields([
       }
   
       // Upload images to Cloudinary
-      const cloudinaryResult = await cloudinary.uploader.upload(picture);
-      const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
+      // const cloudinaryResult = await cloudinary.uploader.upload(picture);
+      // const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
   
       // Find and update the existing car
       const updatedCar = await Product.findByIdAndUpdate(
@@ -266,8 +267,8 @@ router.post('/', upload.fields([
           phone,
           location,
           category,
-          picture: cloudinaryResult.secure_url,
-          picturesec: cloudinaryRe.secure_url,
+          picture: picture,
+          picturesec: picturesec,
         },
         { new: true }
       );

@@ -118,14 +118,16 @@ router.post('/', upload.fields([
     const { name, location, carnum, region, town, phone, card,whatsapp,} = req.body;
 
     // Check if picture is present in the request
-    const carpic = req.files['carpic'][0].path;
-    const driverpic = req.files['driverpic'][0].path;
+    // const carpic = req.files['carpic'][0].path;
+    // const driverpic = req.files['driverpic'][0].path;
+    const carpic = req.files['carpic'] ? req.files['carpic'][0].path : null;
+    const driverpic = req.files['driverpic'] ? req.files['driverpic'][0].path : null;
 
 
 
     // Upload image to Cloudinary
-    const cloudinaryResult = await cloudinary.uploader.upload(carpic);
-    const cloudinaryRe = await cloudinary.uploader.upload(driverpic);
+    // const cloudinaryResult = await cloudinary.uploader.upload(carpic);
+    // const cloudinaryRe = await cloudinary.uploader.upload(driverpic);
 
     // Create a new product instance
     const newProduct = new Okada({
@@ -138,8 +140,8 @@ router.post('/', upload.fields([
       phone,
       card,
       author: req.body.userId,
-      carpic: cloudinaryResult.secure_url,
-      driverpic: cloudinaryRe.secure_url,
+      carpic: carpic,
+      driverpic: driverpic,
     });
 
     // Save the product to the database
@@ -165,12 +167,15 @@ router.put('/:id', upload.fields([
     const carId = req.params.id;
 
     // Check if pictures are present in the request
-    const carpic = req.files['carpic'][0].path;
-    const driverpic = req.files['driverpic'][0].path;
+    // const carpic = req.files['carpic'][0].path;
+    // const driverpic = req.files['driverpic'][0].path;
+    const carpic = req.files['carpic'] ? req.files['carpic'][0].path : null;
+    const driverpic = req.files['driverpic'] ? req.files['driverpic'][0].path : null;
+
 
     // Upload images to Cloudinary
-    const cloudinaryResult = await cloudinary.uploader.upload(carpic);
-    const cloudinaryRe = await cloudinary.uploader.upload(driverpic);
+    // const cloudinaryResult = await cloudinary.uploader.upload(carpic);
+    // const cloudinaryRe = await cloudinary.uploader.upload(driverpic);
 
     // Find and update the existing car
     const updatedCar = await Okada.findByIdAndUpdate(
@@ -184,8 +189,8 @@ router.put('/:id', upload.fields([
         whatsapp,
         card,
         phone,
-        carpic: cloudinaryResult.secure_url,
-        driverpic: cloudinaryRe.secure_url,
+        carpic: carpic,
+        driverpic: driverpic,
       },
       { new: true }
     );

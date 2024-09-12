@@ -115,57 +115,44 @@ router.get('/products/:productId', async (req, res) => {
 
 // Create a new product with image upload
 router.post('/', upload.fields([
-    { name: 'picture', maxCount: 1 },
-    { name: 'picturesec', maxCount: 1 },
-  ]), async (req, res) => {
-    try {
-      // Extract data from the request
-      const {  name,
-        phone,
-        price,
-        description,
-        location,
-        region,
-        category,
-        whatsapp,
-        town,
-        } = req.body;
-  
-      // Check if picture is present in the request
-      const picture = req.files['picture'][0].path;
-      const picturesec = req.files['picturesec'][0].path;
-  
-  
-  
-      // Upload image to Cloudinary
-      const cloudinaryResult = await cloudinary.uploader.upload(picture);
-      const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
-  
-      // Create a new product instance
-      const newProduct = new Spare({
-        name,
-        phone,
-        category,
-        price,
-        description,
-        whatsapp,
-        location,
-        region,
-        town,
-        author: req.body.userId,
-        picture: cloudinaryResult.secure_url,
-        picturesec: cloudinaryRe.secure_url,
-      });
-  
-      // Save the product to the database
-      const savedProduct = await newProduct.save();
-  
-      res.json(savedProduct);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+  { name: 'picture', maxCount: 1 },
+  { name: 'picturesec', maxCount: 1 },
+  { name: 'video', maxCount: 1 },
+]), async (req, res) => {
+  try {
+    // Extract data from the request
+    const { name, phone, whatsapp, description, location, region, town, category } = req.body;
+
+    // Check if files are present in the request
+    const picture = req.files['picture'] ? req.files['picture'][0].path : null;
+    const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
+    const video = req.files['video'] ? req.files['video'][0].path : null;
+
+    // Create a new product instance
+    const newProduct = new Services({
+      name,
+      phone,
+      whatsapp,
+      description,
+      location,
+      region,
+      town,
+      category,
+      author: req.body.userId,
+      picture: picture, // Use the path provided by multer
+      picturesec: picturesec, // Use the path provided by multer
+      video: video, // Use the path provided by multer
+    });
+
+    // Save the product to the database
+    const savedProduct = await newProduct.save();
+
+    res.json(savedProduct);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
   
   
   
@@ -188,8 +175,8 @@ router.post('/', upload.fields([
       }
   
       // Upload images to Cloudinary
-      const cloudinaryResult = await cloudinary.uploader.upload(picture);
-      const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
+      // const cloudinaryResult = await cloudinary.uploader.upload(picture);
+      // const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
   
       // Find and update the existing car
       const updatedCar = await Spare.findByIdAndUpdate(
@@ -204,8 +191,8 @@ router.post('/', upload.fields([
           whatsapp,
           phone,
           location,
-          picture: cloudinaryResult.secure_url,
-          picturesec: cloudinaryRe.secure_url,
+          picture: picture,
+          picturesec: picturesec,
         },
         { new: true }
       );
