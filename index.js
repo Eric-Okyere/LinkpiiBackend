@@ -62,12 +62,12 @@ const Sparepartsmainpost = require("./routes/SparepartmainPost")
 const fashionViewers = require("./routes/Coments/FashionViewers")
 const Shopviwersec = require("./routes/Coments/Shopcommentsec")
 const Productviwers = require("./routes/Coments/ProductViewers")
+const DeleteAccount = require("./routes/DeleteAccount")
 
 // Replace this line
 // const bcrypt = require('bcrypt');
 
-// With this line
-const bcrypt = require('bcryptjs');
+
 
 // Define the writable directory path
 const writableDirectoryPath = path.join(__dirname, 'farmbackend');
@@ -146,7 +146,7 @@ app.use("/sparepartsmainpost", Sparepartsmainpost)
 app.use("/viewers", fashionViewers)
 app.use("/shopviewers", Shopviwersec)
 app.use("/productviewers", Productviwers)
-
+app.use("/", DeleteAccount)
 
 
 const PORT = process.env.PORT || 3000;
