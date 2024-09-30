@@ -63,9 +63,8 @@ const fashionViewers = require("./routes/Coments/FashionViewers")
 const Shopviwersec = require("./routes/Coments/Shopcommentsec")
 const Productviwers = require("./routes/Coments/ProductViewers")
 const DeleteAccount = require("./routes/DeleteAccount")
-
-// Replace this line
-// const bcrypt = require('bcrypt');
+const Boost = require("./routes/Boost/Boost")
+const rating = require("./routes/Rating/rating")
 
 
 
@@ -147,6 +146,8 @@ app.use("/viewers", fashionViewers)
 app.use("/shopviewers", Shopviwersec)
 app.use("/productviewers", Productviwers)
 app.use("/", DeleteAccount)
+app.use("/boost", Boost)
+app.use("/rating", rating)
 
 
 const PORT = process.env.PORT || 3000;

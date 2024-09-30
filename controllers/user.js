@@ -7,6 +7,7 @@ const { isValidObjectId } = require('mongoose');
 const { OAuth2Client } = require('google-auth-library');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require("cloudinary").v2
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 
 const resetToken = require('../models/resetToken');
@@ -95,41 +96,54 @@ exports.deleteUser = async (req, res) => {
 
 
 exports.createUser = async (req, res) => {
-  const { name, email, password,phone, lastname } = req.body;
-  const user = await User.findOne({email});
-  if (user)
-    return sendError(res, "This email is already in use, try sign-in")
+  const { name, email, password, phone, lastname } = req.body;
 
-  const newUser = await User({
+  // Log the raw request body to check the received email
+  console.log("Received request:", req.body);
+
+  // Validate email format using the regex (this allows dots in any email)
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: "Invalid email format" });
+  }
+
+  // Check if the email domain is Gmail and log it (for debugging)
+  const isGmail = email.toLowerCase().includes("@gmail.com");
+  console.log("Is Gmail:", isGmail);
+
+  // Do not remove or alter dots for Gmail or any other email addresses
+  const user = await User.findOne({ email: email.toLowerCase() });
+  if (user) {
+    return res.status(400).json({ error: "Email already in use" });
+  }
+
+  // Create a new user object
+  const newUser = new User({
     name,
     lastname,
-    email,
+    email, // Save the email exactly as provided
     phone,
-    password,
+    password
   });
 
-
-const OTP = generateOTP()
- const verif = new verificationToken({
-  owner: newUser._id,
-  token: OTP
-})
-
-
-  await verif.save();
+  // Save the new user to the database
   await newUser.save();
 
-// mailTransprot().sendMail({
-//   from:"emailverification@gmail.com",
-//   to: newUser.email,
-//   subject:"verify your email account",
-//   html: `<h1> Please verify your email with this code ${OTP}</h1>`
-// })
-
-  res.json({ success: true, user:{
-    name: newUser.name, lastname:newUser.lastname, email: newUser.email, phoneno:newUser.phone, id: newUser._id, verified: newUser.verified
-  } });
+  // Return success response
+  res.json({
+    success: true,
+    user: {
+      name: newUser.name,
+      lastname: newUser.lastname,
+      email: newUser.email, // This will include the dots if provided
+      phoneno: newUser.phone,
+      id: newUser._id,
+      verified: newUser.verified,
+    },
+  });
 };
+
+
+
 
 
 

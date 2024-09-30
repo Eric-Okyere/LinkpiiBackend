@@ -6,11 +6,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
     required: true
-   
   },
   name: {
     type: String,
-    default:""
+    default: ""
   },
   lastname: {
     type: String,
@@ -24,53 +23,25 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    // Add email validation to accept dots
+    match: [/^\S+@\S+\.\S+$/, 'Invalid email format']
   },
   password: {
     type: String,
     required: true,
   },
-  interested:{
+  verified: {
     type: Boolean,
-    default:false,
-   },
-  products:[{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "employee",
-}],
- avatar:{
-  type: String,
-  default:""
- },
- verified:{
-  type: Boolean,
-  default:false,
-  require: true
- },
- report:{
-  type: Boolean,
-  default:false,
- 
- },
- dateCreated:{
-  type:Date, 
-  default: Date.now 
-},
-eulaAccepted: {
-  type: Boolean,
-  default: false,
-  
-},
-eulaProductAccepted: {
-  type: Boolean,
-  default: false,
-},
-picture:{
-  type: String,
-    default:""
-}
-
+    default: false,
+    required: true
+  },
+  dateCreated: {
+    type: Date,
+    default: Date.now
+  }
 });
 
+// Pre-save hook for hashing the password
 userSchema.pre('save', function (next) {
   if (this.isModified('password')) {
     bcrypt.hash(this.password, 4, (err, hash) => {
@@ -81,16 +52,16 @@ userSchema.pre('save', function (next) {
   }
 });
 
+// Method to compare passwords
 userSchema.methods.comparePassword = async function (password) {
-  if (!password) throw new Error('Password is missing, can not compare!');
+  if (!password) throw new Error('Password is missing, cannot compare!');
 
   try {
     const result = await bcrypt.compare(password, this.password);
     return result;
   } catch (error) {
-    console.log('Error while comparing password!', error.message);
+    console.log('Error while comparing password:', error.message);
   }
 };
-
 
 module.exports = mongoose.model('users', userSchema);

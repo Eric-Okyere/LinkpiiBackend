@@ -66,7 +66,18 @@ const EmployeeSchema = mongoose.Schema({
   comments: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment'
-  }]
+  }],
+  rating: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'users' }, 
+    score: { type: Number, required: true, min: 1, max: 5 } 
+  }],
+  averageRating: {
+    type: Number,
+    default: 0, 
+    min: 0,
+    max: 5
+  }
+
 });
 
 EmployeeSchema.set('toJSON', {

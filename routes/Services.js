@@ -344,6 +344,72 @@ router.put('/:id/deactivate', async (req, res) => {
     })
  })
 
+
+
+ router.post("/:id/rate", async (req, res) => {
+  try {
+    const { id } = req.params; // Use 'id' instead of 'serviceId'
+    const { userId, rating } = req.body;
+
+    // Validate rating score
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+    }
+
+    // Find the service
+    const service = await Services.findById(id); // Use 'id' here
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    // Check if the user has already rated the service
+    const existingRatingIndex = service.rating.findIndex(r => r.user.toString() === userId);
+    if (existingRatingIndex >= 0) {
+      // Update existing rating
+      service.rating[existingRatingIndex].score = rating;
+    } else {
+      // Add new rating
+      service.rating.push({ user: userId, score: rating });
+    }
+
+    // Calculate the average rating
+    const totalRating = service.rating.reduce((acc, rate) => acc + rate.score, 0);
+    service.averageRating = service.rating.length > 0 ? totalRating / service.rating.length : 0;
+
+    // Save the service document
+    await service.save();
+
+    return res.status(200).json({
+      message: 'Rating submitted successfully',
+      averageRating: service.averageRating
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+
+router.get("/:id/rating", async (req, res) => {
+  try {
+    const { id } = req.params; // Extract service ID from the URL
+
+    // Find the service by ID
+    const service = await Services.findById(id);
+
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    // Respond with the average rating
+    return res.status(200).json({
+      averageRating: service.averageRating,
+      ratings: service.rating, // Optionally, return all individual ratings
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
  
 
  
