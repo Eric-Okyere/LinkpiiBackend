@@ -8,8 +8,9 @@ const { OAuth2Client } = require('google-auth-library');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require("cloudinary").v2
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-
+const bcrypt = require("bcryptjs");
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const resetToken = require('../models/resetToken');
 
 
@@ -252,35 +253,87 @@ exports.getUserById = async (req, res) => {
 
 
 
-exports.forgotPassword = async(req, res)=>{
+// exports.forgotPassword = async(req, res)=>{
 
-const {email}= req.body;
-if(!email) return sendError(res, "Sorry, provid a valid email!")
+// const {email}= req.body;
+// if(!email) return sendError(res, "Sorry, provid a valid email!")
 
-const user = await User.find({email});
-if(!user) return sendError(res, "User not found")
-
-
-const token = await resetToken.findOne({owner: user._id})
-if(token) return sendError(res, "You can only request for another token in one hour!")
+// const user = await User.find({email});
+// if(!user) return sendError(res, "User not found")
 
 
-const randomBytes = await createRandomBytes()
-const ResetToken = new resetToken({owner: user._id, token: randomBytes})
-await ResetToken.save();
+// const token = await resetToken.findOne({owner: user._id})
+// if(token) return sendError(res, "You can only request for another token in one hour!")
 
 
-mailTransprot().sendMail({
-  from:"security@gmail.com",
-  to: user.email,
-  subject:"Password reset",
-  html: `http://localhost:3000/reset-password?token=${randomBytes}&id=${user._id}`
-})
-
-res.json({success: true, error: "Password reset link is sent to your email"})
+// const randomBytes = await createRandomBytes()
+// const ResetToken = new resetToken({owner: user._id, token: randomBytes})
+// await ResetToken.save();
 
 
-}
+// mailTransprot().sendMail({
+//   from:"security@gmail.com",
+//   to: user.email,
+//   subject:"Password reset",
+//   html: `http://localhost:3000/reset-password?token=${randomBytes}&id=${user._id}`
+// })
+
+// res.json({success: true, error: "Password reset link is sent to your email"})
+
+
+// }
+
+
+
+// Function to handle password reset request
+exports.forgotPassword= async (req, res) => {
+  const { email } = req.body;
+
+  // Find the user by email
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).send('User with that email does not exist');
+  }
+
+  // Generate a reset token
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const resetTokenExpiration = Date.now() + 3600000; // Token expires in 1 hour
+
+  // Save the token and its expiration in the database
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpires = resetTokenExpiration;
+  await user.save();
+
+  // Create the reset URL (front-end URL + token)
+  const resetUrl = `https://linkpiireset.netlify.app/reset-password/${resetToken}`;
+
+  // Send the email
+  const transporter = nodemailer.createTransport({
+    host: process.env.MAILTRAP_HOST, 
+    port: process.env.MAILTRAP_PORT,
+    auth: {
+      user: process.env.MAILTRAP_USERNAME,
+      pass: process.env.MAILTRAP_PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    to: user.email,
+    from: 'linkpiiapp@gmail.com',
+    subject: 'Password Reset Request',
+    text: `You requested a password reset. Please click the link to reset your password: ${resetUrl}`
+  };
+
+  transporter.sendMail(mailOptions, (err) => {
+    if (err) {
+      return res.status(500).send('Error sending email');
+    }
+    res.status(200).send('Reset link sent to your email');
+  });
+};
+
+
+
 
 exports.Report = async (req, res) => {
   const productId = req.params.id;
@@ -386,3 +439,105 @@ exports.updateUserPicture = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
+
+
+// Reset password endpoint
+exports.resetPassword= async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  // Find user by the reset token and ensure the token is not expired
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    return res.status(400).send('Invalid or expired token');
+  }
+
+  // Set the new password
+  user.password = newPassword;
+  user.resetPasswordToken = undefined;  // Clear the reset token
+  user.resetPasswordExpires = undefined;
+  
+  await user.save();
+
+  res.status(200).send('Password has been reset');
+};
+
+
+
+// Password reset route
+// exports.resetPassword = async (req, res) => {
+//   const { email, newPassword } = req.body;
+
+//   // Check if the user exists with the provided email
+//   const user = await User.findOne({ email: email.toLowerCase() });
+//   if (!user) {
+//     return res.status(400).json({ error: "User not found" });
+//   }
+
+
+
+//   // Hash the new password
+//   const salt = await bcrypt.genSalt(10);
+//   const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+//   // Update the user's password
+//   user.password = hashedPassword;
+//   await user.save();
+
+//   // Return success response
+//   res.json({ success: true, message: "Password has been reset successfully" });
+// };
+
+
+
+// Function to handle password reset request
+// app.post('/forgot-password', 
+  
+// exports.forgotPassword= async (req, res) => {
+//   const { email } = req.body;
+
+//   // Find the user by email
+//   const user = await User.findOne({ email });
+//   if (!user) {
+//     return res.status(404).send('User with that email does not exist');
+//   }
+
+//   // Generate a reset token
+//   const resetToken = crypto.randomBytes(32).toString('hex');
+//   const resetTokenExpiration = Date.now() + 3600000; // Token expires in 1 hour
+
+//   // Save the token and its expiration in the database
+//   user.resetPasswordToken = resetToken;
+//   user.resetPasswordExpires = resetTokenExpiration;
+//   await user.save();
+
+//   // Create the reset URL (front-end URL + token)
+//   const resetUrl = `localhost:5173//reset-password/${resetToken}`;
+
+//   // Send the email
+//   const transporter = nodemailer.createTransport({
+//     service: 'Gmail', // or any email provider
+//     auth: {
+//       user: process.env.EMAIL_USER,
+//       pass: process.env.EMAIL_PASSWORD,
+//     },
+//   });
+
+//   const mailOptions = {
+//     to: user.email,
+//     from: 'ericokyere021@gmail.com',
+//     subject: 'Password Reset Request',
+//     text: `You requested a password reset. Please click the link to reset your password: ${resetUrl}`
+//   };
+
+//   transporter.sendMail(mailOptions, (err) => {
+//     if (err) {
+//       return res.status(500).send('Error sending email');
+//     }
+//     res.status(200).send('Reset link sent to your email');
+//   });
+// };
