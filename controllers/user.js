@@ -96,34 +96,46 @@ exports.deleteUser = async (req, res) => {
 
 
 
-exports.createUser = async (req, res) => {
-  const { name, email, password, phone, lastname } = req.body;
 
-  // Log the raw request body to check the received email
+exports.createUser = async (req, res) => {
+  const { name, email, password,  phone, lastname } = req.body;
+
   console.log("Received request:", req.body);
 
-  // Validate email format using the regex (this allows dots in any email)
+  // Validate email format using regex
   if (!emailRegex.test(email)) {
-    return res.status(400).json({ error: "Invalid email format" });
+    return res.status(400).json({ message: "Invalid email format" });
   }
 
-  // Check if the email domain is Gmail and log it (for debugging)
-  const isGmail = email.toLowerCase().includes("@gmail.com");
-  console.log("Is Gmail:", isGmail);
+  // Check if the email domain is either @gmail.com, @email.com, or @yahoo.com
+  const allowedDomains = ["@gmail.com", "@email.com", "@yahoo.com"];
+  const emailDomain = email.toLowerCase().substring(email.indexOf('@'));
+  
+  // If email does not belong to allowed domains, return an error
+  if (!allowedDomains.includes(emailDomain)) {
+    return res.status(400).json({ message: "Invalid email domain. Only Gmail, Email, or Yahoo addresses are allowed." });
+  }
 
-  // Do not remove or alter dots for Gmail or any other email addresses
+  console.log("Is Valid Domain:", allowedDomains.includes(emailDomain));
+
+
+  // Check if the email is already in use
   const user = await User.findOne({ email: email.toLowerCase() });
   if (user) {
-    return res.status(400).json({ error: "Email already in use" });
+    return res.status(400).json({ message: "Email already in use. Please login" });
   }
+
+  // Hash the password before saving
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
 
   // Create a new user object
   const newUser = new User({
     name,
     lastname,
-    email, // Save the email exactly as provided
+    email: email.toLowerCase(),
     phone,
-    password
+    password: hashedPassword,  // Save hashed password
   });
 
   // Save the new user to the database
@@ -135,13 +147,16 @@ exports.createUser = async (req, res) => {
     user: {
       name: newUser.name,
       lastname: newUser.lastname,
-      email: newUser.email, // This will include the dots if provided
+      email: newUser.email,
       phoneno: newUser.phone,
       id: newUser._id,
       verified: newUser.verified,
     },
   });
 };
+
+
+
 
 
 
