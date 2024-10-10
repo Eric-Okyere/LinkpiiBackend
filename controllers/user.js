@@ -113,7 +113,7 @@ exports.createUser = async (req, res) => {
   
   // If email does not belong to allowed domains, return an error
   if (!allowedDomains.includes(emailDomain)) {
-    return res.status(400).json({ message: "Invalid email domain. Only Gmail, Email, or Yahoo addresses are allowed." });
+    return res.status(400).json({ message: "Invalid email domain." });
   }
 
   console.log("Is Valid Domain:", allowedDomains.includes(emailDomain));
