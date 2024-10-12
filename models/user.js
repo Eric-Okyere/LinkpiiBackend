@@ -54,7 +54,15 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpires: {
     type: Date,
     required: false,
-  }
+  },
+  avatar:{
+    type:String,
+    default:""
+  },
+  picture: {
+    type: String,
+    default: ""
+  },
 });
 
 // Pre-save hook for hashing the password

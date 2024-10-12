@@ -65,6 +65,7 @@ const Productviwers = require("./routes/Coments/ProductViewers")
 const DeleteAccount = require("./routes/DeleteAccount")
 const Boost = require("./routes/Boost/Boost")
 const rating = require("./routes/Rating/rating")
+const reqt = require("./routes/Coments/request")
 
 
 
@@ -148,6 +149,7 @@ app.use("/productviewers", Productviwers)
 app.use("/", DeleteAccount)
 app.use("/boost", Boost)
 app.use("/rating", rating)
+app.use("/", reqt)
 
 
 const PORT = process.env.PORT || 3000;

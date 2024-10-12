@@ -15,7 +15,8 @@ const {
   EULA,
   EULAPost,
   googleSignin,
-  resetPassword
+  resetPassword,
+changePassword
 } = require('../controllers/user');
 
 const {
@@ -46,6 +47,7 @@ router.post('/sign-in', userSignIn);
 router.post('/verify-email', verifyEmail);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
+router.put('/changepass', changePassword);
 
 
 
