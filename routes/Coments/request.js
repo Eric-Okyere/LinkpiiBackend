@@ -5,10 +5,6 @@ const User = require('../../models/user');
 const { Reqt } = require('../../models/call/request');
 
 
-
-
-
-
 router.post('/forgpass', async (req, res) => {
     const { phone, password, usermessage } = req.body;
 

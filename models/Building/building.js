@@ -63,6 +63,10 @@ const BuildingsSchema = mongoose.Schema({
     type: Number,
     default: 6
   },
+  video: {
+    type: String,
+    default: ""
+  },
   boost: {
     type: Boolean,
     default: false

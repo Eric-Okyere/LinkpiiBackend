@@ -21,6 +21,10 @@ const SParepartsSchema = mongoose.Schema({
     type: String,
     default: ""
   },
+  video: {
+    type: String,
+    default: ""
+  },
   location: {
     type: String,
     require: true

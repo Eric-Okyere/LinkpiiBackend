@@ -16,18 +16,38 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Configure Multer to use Cloudinary as storage
 const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'upload', // Specify the folder in Cloudinary where the images will be stored
-      format: 'jpg', // Specify the format of the uploaded file
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    let folder = 'upload';
+
+    if (file.mimetype.startsWith('video')) {
+      return {
+        folder: folder,
+        resource_type: 'video',
+        format: 'mp4',
+        transformation: [
+          { width: 600, height: 300, crop: 'limit' }, // Limit to 640x360 resolution
+          { quality: 'auto:best' }, // Set lower quality for compression
+          { video_codec: 'h264' }, // Use H.264 codec for better compression
+          { bit_rate: '1500k' }, // Limit the bitrate to 500 kbps
+          { audio_codec: 'aac', audio_frequency: 48000 }, // Compress audio as well
+          { duration: "10.0" }
+        ]
+      };
+    }
+    // 700x360
+
+    return {
+      folder: folder,
+      format: 'jpg',
       transformation: [
-        { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, // Resize and crop the image
-        { quality: 'auto:eco', fetch_format: 'auto' } // Optimize image quality and format
+        { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
+        { quality: 'auto:eco', fetch_format: 'auto' }
       ]
-    },
-  });
+    };
+  },
+});
 
 const upload = multer({ storage: storage });
 
@@ -148,6 +168,7 @@ router.get('/region/accra', async (req, res) => {
 router.post('/', upload.fields([
     { name: 'picture', maxCount: 1 },
     { name: 'picturesec', maxCount: 1 },
+    { name: 'video', maxCount: 1 },
   ]), async (req, res) => {
     try {
       // Extract data from the request
@@ -165,7 +186,7 @@ router.post('/', upload.fields([
    
       const picture = req.files['picture'] ? req.files['picture'][0].path : null;
       const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
-  
+      const video = req.files['video'] ? req.files['video'][0].path : null;
   
   
       // Upload image to Cloudinary
@@ -187,6 +208,7 @@ router.post('/', upload.fields([
         author: req.body.userId,
         picture: picture,
         picturesec: picturesec,
+        video
       });
   
       // Save the product to the database

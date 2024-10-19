@@ -255,9 +255,9 @@ router.post('/', upload.fields([
       town,
       category,
       author: req.body.userId,
-      picture: picture, // Use the path provided by multer
-      picturesec: picturesec, // Use the path provided by multer
-      video: video, // Use the path provided by multer
+      picture: picture, 
+      picturesec: picturesec, 
+      video: video, 
     });
 
     // Save the product to the database

@@ -50,6 +50,10 @@ const EmployeeSchema = mongoose.Schema({
     type: String,
     default: 0
   },
+  video: {
+    type: String,
+    default: ""
+  },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
   dateCreated: {
     type: Date,

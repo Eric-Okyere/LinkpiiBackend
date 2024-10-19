@@ -149,6 +149,7 @@ router.get('/region/accra', async (req, res) => {
 router.post('/', upload.fields([
     { name: 'picture', maxCount: 1 },
     { name: 'picturesec', maxCount: 1 },
+    { name: 'video', maxCount: 1 }
   ]), async (req, res) => {
     try {
       // Extract data from the request
@@ -166,7 +167,7 @@ router.post('/', upload.fields([
       // Check if picture is present in the request
       const picture = req.files['picture'] ? req.files['picture'][0].path : null;
       const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
-  
+      const video = req.files['video'] ? req.files['video'][0].path : null;
   
   
       // Upload image to Cloudinary
@@ -188,6 +189,7 @@ router.post('/', upload.fields([
         author: req.body.userId,
         picture: picture,
         picturesec: picturesec,
+        video:video
       });
   
       // Save the product to the database
