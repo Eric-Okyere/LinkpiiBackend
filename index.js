@@ -149,7 +149,7 @@ app.use("/productviewers", Productviwers)
 app.use("/", DeleteAccount)
 app.use("/boost", Boost)
 app.use("/rating", rating)
-app.use("/", reqt)
+app.use("/reqts", reqt)
 
 
 const PORT = process.env.PORT || 3000;
