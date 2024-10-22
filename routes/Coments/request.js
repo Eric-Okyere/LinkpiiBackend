@@ -106,7 +106,7 @@ router.get('/requests', async (req, res) => {
 
 
 
-router.delete("/:id",(req, res)=>{
+router.delete("/reqt/:id",(req, res)=>{
     Reqt.findByIdAndRemove(req.params.id).then(product=>{
         if(product){
             return res.status(200).json({success:true, message:"the product is deleted successfully"})
