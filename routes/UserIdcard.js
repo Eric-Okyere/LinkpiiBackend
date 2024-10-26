@@ -70,4 +70,43 @@ router.put('/:id/picture', upload.fields([{ name: 'avatar' }, { name: 'picture' 
   }
 });
 
+
+// Route to update only username and phone
+router.put('/:id/details', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    console.log("User ID:", userId);
+    console.log("Request Body:", req.body);
+
+    if (!isValidObjectId(userId)) {
+      return res.status(400).json({ success: false, message: 'Invalid user ID' });
+    }
+
+    const { name, phone, lastname, email } = req.body;
+
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (lastname) updateData.lastname = lastname;
+    if (phone) updateData.phone = phone;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({ success: true, message: 'User details updated successfully', user: updatedUser });
+  } catch (error) {
+    console.error('Error updating user details:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
+
+
 module.exports = router;

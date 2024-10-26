@@ -3,6 +3,11 @@ const express = require("express");
 const { Product } = require("../models/products/products");
 const router = express.Router()
 
+
+
+
+
+
 router.get('/', async(req,res)=>{
     const categoryList = await Category.find();
 
