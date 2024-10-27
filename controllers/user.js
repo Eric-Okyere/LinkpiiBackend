@@ -524,6 +524,42 @@ exports.changePassword = async (req, res) => {
 
 
 
+exports.adminEditPassword = async (req, res) => {
+  const { newPassword } = req.body;
+  const { id: userId } = req.params; // Extract userId from URL parameters
+
+  try {
+    // Step 1: Find the user by their ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Step 2: Validate new password strength
+    if (newPassword.length < 4) { // Example: 8 characters minimum
+      return res.status(400).json({ success: false, message: "New password is too weak" });
+    }
+
+    // Step 3: Hash the new password
+    const saltRounds = 10;
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Step 4: Update the user's password in the database
+    user.password = hashedNewPassword;
+    await user.save();
+
+    // Step 5: Send a success response
+    return res.status(200).json({ success: true, message: "Password reset successfully" });
+
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+
+
 // Password reset route
 // exports.resetPassword = async (req, res) => {
 //   const { email, newPassword } = req.body;
