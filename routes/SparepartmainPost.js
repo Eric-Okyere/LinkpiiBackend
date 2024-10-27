@@ -227,6 +227,7 @@ router.post('/', upload.fields([
   router.put('/:id', upload.fields([
     { name: 'picture', maxCount: 1 },
     { name: 'picturesec', maxCount: 1 },
+    { name: 'video', maxCount: 1 },
   ]), async (req, res) => {
     try {
       // Extract data from the request
@@ -236,6 +237,7 @@ router.post('/', upload.fields([
       // Check if pictures are present in the request
       const picture = req.files['picture'] ? req.files['picture'][0].path : null;
       const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
+      const video = req.files['video'] ? req.files['video'][0].path : null;
   
       if (!picture || !picturesec) {
         return res.status(400).json({ error: 'Please upload both pictures' });
@@ -261,6 +263,7 @@ router.post('/', upload.fields([
           category,
           picture: picture,
           picturesec: picturesec,
+          video
         },
         { new: true }
       );
