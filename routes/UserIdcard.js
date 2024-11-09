@@ -33,29 +33,33 @@ router.put('/:id/picture', upload.fields([{ name: 'avatar' }, { name: 'picture' 
     const userId = req.params.id;
 
     // Check if a valid user ID is provided
-    if (!isValidObjectId(userId)) {
-      return res.status(400).json({ success: false, message: 'Invalid user ID' });
-    }
+    // if (!isValidObjectId(userId)) {
+    //   return res.status(400).json({ success: false, message: 'Invalid user ID' });
+    // }
 
-    // Check if files are provided
-    if (!req.files || !req.files.avatar || !req.files.picture) {
-      return res.status(400).json({ success: false, message: 'Both avatar and picture files must be provided' });
-    }
+    // // Check if files are provided
+    // if (!req.files || !req.files.avatar || !req.files.picture) {
+    //   return res.status(400).json({ success: false, message: 'Both avatar and picture files must be provided' });
+    // }
 
     // Upload the images to Cloudinary and get the secure URLs
-    const avatarPath = req.files.avatar[0].path;
-    const picturePath = req.files.picture[0].path;
+    // const avatarPath = req.files.avatar[0].path;
+    // const picturePath = req.files.picture[0].path;
 
-    const avatarResult = await cloudinary.uploader.upload(avatarPath);
-    const pictureResult = await cloudinary.uploader.upload(picturePath);
+    // const avatarResult = await cloudinary.uploader.upload(avatarPath);
+    // const pictureResult = await cloudinary.uploader.upload(picturePath);
 
-    const avatarUrl = avatarResult.secure_url;
-    const pictureUrl = pictureResult.secure_url;
+    // const avatarUrl = avatarResult.secure_url;
+    // const pictureUrl = pictureResult.secure_url;
+
+
+    const picture = req.files['picture'] ? req.files['picture'][0].path : null;
+      const avatar = req.files['avatar'] ? req.files['avatar'][0].path : null;
 
     // Update the user's avatar and picture in the database
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { avatar: avatarUrl, picture: pictureUrl, verified: true },
+      { avatar, picture, verified: true },
       { new: true, runValidators: true }
     );
 
