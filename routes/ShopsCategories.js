@@ -40,7 +40,7 @@ cloudinary.config({
 
 router.get(`/`, async (req,res)=>{
   
-    const productList = await Shops.find()
+    const productList = await Shops.find().sort({name: +1 });
     if(!productList){
         res.status(500).json({success: false})
     }

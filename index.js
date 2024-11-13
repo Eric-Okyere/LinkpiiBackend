@@ -104,7 +104,9 @@ app.use("/mtn", MTN);
 app.use("/vodafone", Vodafone);
 app.use("/emergency", Emergency);
 app.use("/codeusers", CodeUsers);
+// general categories
 app.use("/fashion", Fashion);
+// general main post
 app.use("/fashionpost", Fashionpost);
 app.use("/mechanics", MechanicsRoutes);
 app.use("/time", Time);

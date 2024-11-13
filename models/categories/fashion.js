@@ -10,6 +10,10 @@ const categoryFashionSchema = mongoose.Schema({
         type:String,
       
     },
+    dateCreated: {
+        type: Date,
+        default: Date.now
+      },
 })
 
 exports.Products = mongoose.model("CategoryFashion", categoryFashionSchema)

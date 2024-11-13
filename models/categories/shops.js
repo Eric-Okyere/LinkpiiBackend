@@ -10,6 +10,10 @@ const ShopsCat = mongoose.Schema({
         type:String,
       
     },
+    dateCreated: {
+        type: Date,
+        default: Date.now
+      }
 })
 
 exports.Shops = mongoose.model("ShopsCat", ShopsCat)
