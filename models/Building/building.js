@@ -38,6 +38,10 @@ const BuildingsSchema = mongoose.Schema({
     type: String,
     require: true
   },
+  priceunit: {
+    type: String,
+    default:""
+  },
   picture: {
     type: String,
     default: ""

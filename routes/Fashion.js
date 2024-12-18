@@ -252,7 +252,7 @@ router.get('/region/accra', async (req, res) => {
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, phone,price, whatsapp, description, location, region, town, category, condition } = req.body;
+      const { name, phone,price, whatsapp, description, location, region, town, category, condition, discount } = req.body;
   
       // Check if files are present in the request
       const picture = req.files['picture'] ? req.files['picture'][0].path : null;
@@ -262,6 +262,7 @@ router.get('/region/accra', async (req, res) => {
       // Create a new product instance
       const newProduct = new Product({
         name,
+        discount,
         phone,
         whatsapp,
         description,
@@ -295,7 +296,7 @@ router.get('/region/accra', async (req, res) => {
   ]), async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, phone,price, whatsapp, description, location, region, town, category, condition } = req.body;
+      const { name, phone,price, whatsapp, description, location, region, town, category, condition, discount } = req.body;
   
       // Find the shop item by ID
       const shopItem = await Product.findById(id);
@@ -305,6 +306,7 @@ router.get('/region/accra', async (req, res) => {
   
       // Update fields
       shopItem.name = name || shopItem.name;
+      shopItem.name = discount || shopItem.discount;
       shopItem.price = price || shopItem.price;
       shopItem.condition = condition || shopItem.condition;
       shopItem.phone = phone || shopItem.phone;

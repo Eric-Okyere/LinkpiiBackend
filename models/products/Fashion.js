@@ -38,6 +38,10 @@ const EmployeeSchema = mongoose.Schema({
     type: String,
     require: true
   },
+  discount: {
+    type: String,
+    default: ""
+  },  
   picture: {
     type: String,
     default: ""

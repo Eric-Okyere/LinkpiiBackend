@@ -257,7 +257,7 @@ router.post('/', upload.fields([
 ]), async (req, res) => {
   try {
     // Extract data from the request
-    const { name, phone,price, whatsapp,amenities, description, location, region, town, category } = req.body;
+    const { name, phone,price, whatsapp,priceunit,amenities, description, location, region, town, category } = req.body;
 
     // Check if files are present in the request
     const picture = req.files['picture'] ? req.files['picture'][0].path : null;
@@ -274,6 +274,7 @@ router.post('/', upload.fields([
       location,
       region,
       amenities,
+      priceunit,
       town,
       category,
       author: req.body.userId,
@@ -301,7 +302,7 @@ router.post('/', upload.fields([
   ]), async (req, res) => {
     try {
       // Extract data from the request
-      const { name, description, region, town, phone, location, price, category,whatsapp,amenities } = req.body;
+      const { name, description, region,priceunit, town, phone, location, price, category,whatsapp,amenities } = req.body;
       const carId = req.params.id;
   
       // Check if pictures are present in the request
@@ -323,6 +324,7 @@ router.post('/', upload.fields([
           name,
           amenities,
           description,
+          priceunit,
           region,
           price,
           whatsapp,
