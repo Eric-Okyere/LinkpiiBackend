@@ -66,6 +66,7 @@ const DeleteAccount = require("./routes/DeleteAccount")
 const Boost = require("./routes/Boost/Boost")
 const rating = require("./routes/Rating/rating")
 const reqt = require("./routes/Coments/request")
+const Version = require("./controllers/Version")
 
 
 
@@ -152,6 +153,7 @@ app.use("/", DeleteAccount)
 app.use("/boost", Boost)
 app.use("/rating", rating)
 app.use("/", reqt)
+app.use("/version", Version)
 
 
 const PORT = process.env.PORT || 3000;
