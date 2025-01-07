@@ -2,7 +2,7 @@ const express = require('express');
 const Version = require('../models/Version');
 const router = express.Router();
 
-// GET: Fetch the latest version
+
 router.get('/', async (req, res) => {
   try {
     const versionInfo = await Version.findOne();

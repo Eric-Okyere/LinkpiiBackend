@@ -289,55 +289,76 @@ router.get('/region/accra', async (req, res) => {
   });
   
  
-  router.put('/:id', upload.fields([
-    { name: 'picture', maxCount: 1 },
-    { name: 'picturesec', maxCount: 1 },
-    { name: 'video', maxCount: 1 },
-  ]), async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { name, phone,price, whatsapp, description, location, region, town, category, condition, discount } = req.body;
+  router.put(
+    '/:id',
+    upload.fields([
+      { name: 'picture', maxCount: 1 },
+      { name: 'picturesec', maxCount: 1 },
+      { name: 'video', maxCount: 1 },
+    ]),
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const {
+          name,
+          phone,
+          price,
+          whatsapp,
+          description,
+          location,
+          region,
+          town,
+          category,
+          condition,
+          discount,
+        } = req.body;
   
-      // Find the shop item by ID
-      const shopItem = await Product.findById(id);
-      if (!shopItem) {
-        return res.status(404).json({ error: 'Shop item not found' });
+        // Find the product by ID
+        const product = await Product.findById(id);
+        if (!product) {
+          return res.status(404).json({ error: 'Product not found' });
+        }
+  
+        // Update product fields if provided in the request body
+        product.name = name || product.name;
+        product.phone = phone || product.phone;
+        product.price = price || product.price;
+        product.whatsapp = whatsapp || product.whatsapp;
+        product.description = description || product.description;
+        product.location = location || product.location;
+        product.region = region || product.region;
+        product.town = town || product.town;
+        product.category = category || product.category;
+        product.condition = condition || product.condition;
+        product.discount = discount || product.discount;
+  
+        // Check and update files if new ones are uploaded
+        if (req.files['picture']) {
+          product.picture = req.files['picture'][0].path;
+        }
+        if (req.files['picturesec']) {
+          product.picturesec = req.files['picturesec'][0].path;
+        }
+        if (req.files['video']) {
+          product.video = req.files['video'][0].path;
+        }
+  
+        // Save the updated product to the database
+        const updatedProduct = await product.save();
+  
+        res.json(updatedProduct);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
       }
-  
-      // Update fields
-      shopItem.name = name || shopItem.name;
-      shopItem.name = discount || shopItem.discount;
-      shopItem.price = price || shopItem.price;
-      shopItem.condition = condition || shopItem.condition;
-      shopItem.phone = phone || shopItem.phone;
-      shopItem.whatsapp = whatsapp || shopItem.whatsapp;
-      shopItem.description = description || shopItem.description;
-      shopItem.location = location || shopItem.location;
-      shopItem.region = region || shopItem.region;
-      shopItem.town = town || shopItem.town;
-      shopItem.category = category || shopItem.category;
-      shopItem.author = req.body.userId || shopItem.author;
-  
-      // Update files if new ones are uploaded
-      if (req.files['picture']) {
-        shopItem.picture = req.files['picture'][0].path;
-      }
-      if (req.files['picturesec']) {
-        shopItem.picturesec = req.files['picturesec'][0].path;
-      }
-      if (req.files['video']) {
-        shopItem.video = req.files['video'][0].path;
-      }
-  
-      // Save the updated shop item
-      const updatedShopItem = await shopItem.save();
-  
-      res.json(updatedShopItem);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+  );
+  
+
+
+
+ 
+  
   
 
 router.put('/:id/approve', async (req, res) => {
