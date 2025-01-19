@@ -108,6 +108,36 @@ router.get('/get/count', async (req, res) => {
 });
 
 
+router.get('/:id/related', async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    // Find the current product
+    const currentProduct = await Product.findById(productId).populate('category');
+
+    if (!currentProduct) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    // Fetch related products based on the same category, excluding the current product
+    const relatedProducts = await Product.find({
+      category: currentProduct.category._id, // Match the category
+      _id: { $ne: productId }, // Exclude the current product
+    })
+      .populate('category')
+      .populate('author')
+      .sort({ boost: -1, dateCreated: -1 }) // Optional: Sort by boost and creation date
+      .limit(5); // Optional: Limit the number of related products returned
+
+    res.json(relatedProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Internal Server Error' });
+  }
+});
+
+
+
  // Assuming you have a route to handle viewing a product
 router.get('/products/:productId', async (req, res) => {
   const productId = req.params.productId;
