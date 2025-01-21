@@ -202,6 +202,7 @@ router.get('/:id/related', async (req, res) => {
     const relatedProducts = await Product.find({
       category: currentProduct.category._id,
       _id: { $ne: productId },
+      approved: true,
     })
       .populate('category')
       .populate('author')
