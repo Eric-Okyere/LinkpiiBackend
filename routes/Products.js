@@ -229,12 +229,12 @@ router.get('/region/kumasi', async (req, res) => {
 router.get('/:id/related', async (req, res) => {
   try {
     const productId = req.params.id;
-    const currentProduct = await Shops.findById(productId).populate('category');
+    const currentProduct = await Product.findById(productId).populate('category');
     if (!currentProduct) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    const relatedProducts = await Shops.find({
+    const relatedProducts = await Product.find({
       category: currentProduct.category._id,
       _id: { $ne: productId },
       approved: true,
