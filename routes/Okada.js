@@ -108,6 +108,37 @@ router.get('/motor/approved', async (req, res) => {
 });
 
 
+
+router.get('/:id/related', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const currentProduct = await Okada.findById(productId).populate('category');
+    if (!currentProduct) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    const relatedProducts = await Okada.find({
+      category: currentProduct.category._id,
+      _id: { $ne: productId },
+      approved: true,
+    })
+      .populate('category')
+      .populate('author')
+      .sort({ boost: -1, dateCreated: -1 })
+      .limit(5);
+
+    if (!relatedProducts.length) {
+      return res.status(404).json({ success: false, message: 'No related products found' });
+    }
+
+    res.json(relatedProducts);
+  } catch (error) {
+    console.error('Error in related products route:', error.message);
+    res.status(500).json({ success: false, error: 'Internal Server Error' });
+  }
+});
+
+
 // Create a new product with image upload
 router.post('/', upload.fields([
   { name: 'carpic', maxCount: 1 },
