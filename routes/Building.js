@@ -189,66 +189,35 @@ router.get('/region/accra', async (req, res) => {
   }
 });
 
+router.get('/:id/related', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const currentProduct = await Buildings.findById(productId).populate('category');
+    if (!currentProduct) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
 
+    const relatedProducts = await Buildings.find({
+      category: currentProduct.category._id,
+      _id: { $ne: productId },
+      approved: true,
+    })
+      .populate('category')
+      .populate('author')
+      .sort({ boost: -1, dateCreated: -1 })
+      .limit(5);
 
-// Create a new product with image upload
-// router.post('/', upload.fields([
-//     { name: 'picture', maxCount: 1 },
-//     { name: 'picturesec', maxCount: 1 },
-//     { name: 'video', maxCount: 1 }
-//   ]), async (req, res) => {
-//     try {
-//       // Extract data from the request
-//       const {  name,
-//         phone,
-//         price,
-//         description,
-//         location,
-//         whatsapp,
-//         amenities,
-//         region,
-//         town,
-//         category} = req.body;
-  
-//       // Check if picture is present in the request
-//       const picture = req.files['picture'] ? req.files['picture'][0].path : null;
-//       const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
-//       const video = req.files['video'] ? req.files['video'][0].path : null;
-  
-  
-  
-//       // Upload image to Cloudinary
-//       // const cloudinaryResult = await cloudinary.uploader.upload(picture);
-//       // const cloudinaryRe = await cloudinary.uploader.upload(picturesec);
-  
-//       // Create a new product instance
-//       const newProduct = new Buildings({
-//         name,
-//         phone,
-//         price,
-//         whatsapp,
-//         description,
-//         location,
-//         region,
-//         town,
-//         amenities,
-//         category,
-//         author: req.body.userId,
-//         picture: picture,
-//         picturesec: picturesec,
-//         video: video
-//       });
-  
-//       // Save the product to the database
-//       const savedProduct = await newProduct.save();
-  
-//       res.json(savedProduct);
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ error: 'Internal Server Error' });
-//     }
-//   });
-  
+    if (!relatedProducts.length) {
+      return res.status(404).json({ success: false, message: 'No related products found' });
+    }
+
+    res.json(relatedProducts);
+  } catch (error) {
+    console.error('Error in related products route:', error.message);
+    res.status(500).json({ success: false, error: 'Internal Server Error' });
+  }
+});
+
 
 router.post('/', upload.fields([
   { name: 'picture', maxCount: 1 },
