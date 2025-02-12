@@ -68,6 +68,7 @@ const rating = require("./routes/Rating/rating")
 const reqt = require("./routes/Coments/request")
 const Version = require("./controllers/Version")
 const appVersionRoutes = require("./routes/Appversion")
+const iOSappVersionRoutes = require("./routes/iOSAppVersion")
 
 
 // Define the writable directory path
@@ -155,6 +156,7 @@ app.use("/rating", rating)
 app.use("/", reqt)
 app.use("/version", Version)
 app.use('/appversion', appVersionRoutes);
+app.use('/iosappversion', iOSappVersionRoutes);
 
 
 const PORT = process.env.PORT || 3000;
