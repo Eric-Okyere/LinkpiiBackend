@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    required: true,
+    default:""
   },
   email: {
     type: String,
@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    default:""
   },
   verified: {
     type: Boolean,
@@ -63,27 +63,24 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  isGoogleUser: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Pre-save hook for hashing the password
 userSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
-    // Ensure password is hashed only if it's a plain text password
-    const isHashed = await bcrypt.getRounds(this.password) > 0;
-    if (!isHashed) {
-      try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-      } catch (err) {
-        return next(err);
-      }
-    } else {
-      next();
+  if (this.isModified('password') && this.password) {
+    try {
+      // Ensure password is hashed only if it's a plain text password
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    } catch (err) {
+      return next(err);
     }
-  } else {
-    next();
   }
+  next();
 });
 
 // Method to compare passwords

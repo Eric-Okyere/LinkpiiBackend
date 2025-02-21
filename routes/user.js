@@ -14,10 +14,12 @@ const {
   Rectified,
   EULA,
   EULAPost,
-  googleSignin,
+  // googleSignin,
   resetPassword,
 changePassword,
-adminEditPassword
+adminEditPassword,
+googleSignIn,
+updatePhone
 } = require('../controllers/user');
 
 const {
@@ -43,13 +45,15 @@ validateUserSignUp,
  userVlidation,
  createUser
 );
-router.post('/auth/google', googleSignin);
+// router.post('/auth/google', googleSignin);
 router.post('/sign-in', userSignIn);
 router.post('/verify-email', verifyEmail);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.put('/changepass', changePassword);
 router.put('/editpass/:id', adminEditPassword);
+router.put('/phone/:id', updatePhone);
+router.post('/auth/google-signin', googleSignIn);
 
 
 

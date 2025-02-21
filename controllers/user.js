@@ -12,6 +12,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const resetToken = require('../models/resetToken');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 
 cloudinary.config({
@@ -28,29 +29,115 @@ cloudinary.config({
 
 
 
-const CLIENT_ID = '450195054535-j1v4j3vcg8rtl0oek01n1g7nkto7c7vc.apps.googleusercontent.com';
-const client = new OAuth2Client(CLIENT_ID);
+// const CLIENT_ID = '450195054535-pfsl62amudom8agpnt90b3ilorjd4v0f.apps.googleusercontent.com';
+// const client = new OAuth2Client(CLIENT_ID);
 
-exports.googleSignin = async (req, res) => {
-  const { idToken } = req.body;
+
+exports.googleSignIn = async (req, res) => {
+  const { token } = req.body;
 
   try {
+    // Verify Google token
     const ticket = await client.verifyIdToken({
-      idToken,
-      audience: CLIENT_ID,
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
-    const userId = payload['sub'];
+    const { email, given_name, family_name, picture } = payload;
 
-    // Here, you can create or update the user in your database
-    res.json({ success: true, userId, email: payload.email });
+    // Check if the user already exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // If the user does not exist, create a new user
+      user = new User({
+        id: user._id.toString(),
+        name: given_name || "Unknown",
+        lastname: family_name || "Unknown",
+        email,
+        phone: "", // Default phone number
+        password: "", // No password for Google sign-in
+        avatar: picture, // Save Google profile picture
+        picture, // Also save it in the 'picture' field
+        isGoogleUser: true, // Flag indicating Google sign-in
+      });
+
+      // Save the new user to the database
+      await user.save();
+    }
+
+    // Generate JWT token
+    const authToken = jwt.sign({ userId: user._id.toString() }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    const userInfo = {
+      id: user._id.toString(),  // Convert _id to id
+      name: user.name,
+      lastname: user.lastname || "",
+      email: user.email,
+      admin: user.admin || false,
+      avatar: user.avatar || "",
+      picture: user.picture || "",
+      phone: user.phone || "",
+      verified: user.verified || false,
+      isGoogleUser: user.isGoogleUser || false,
+      eulaProductAccepted: user.eulaProductAccepted || false,
+      dateCreated: user.dateCreated,
+      report: user.report || false,
+      products: user.products || [],
+      resetPasswordToken: user.resetPasswordToken || null,
+      resetPasswordExpires: user.resetPasswordExpires || null,
+    };
+
+    // Send back user information and token
+    res.json({ success: true, user: userInfo, token: authToken });
   } catch (error) {
-    console.error('Error verifying ID token:', error);
-    res.status(401).json({ error: 'Invalid token' });
+    console.error('Error during Google sign-in:', error);
+    res.status(500).json({ success: false, message: 'Google sign-in failed' });
   }
 };
 
+
+// exports.googleSignIn = async (req, res) => {
+//   const { token } = req.body;  // Token from frontend
+
+//   try {
+//     // Verify the token
+//     const ticket = await client.verifyIdToken({
+//       idToken: token,
+//       audience: process.env.GOOGLE_CLIENT_ID,
+//     });
+
+//     const payload = ticket.getPayload();
+//     const { email, name, picture } = payload;
+
+//     let user = await User.findOne({ email });
+
+//     if (!user) {
+//       user = new User({
+//         name,
+//         email,
+//         avatar: picture,
+//         verified: true,
+//         password: "",
+//       });
+
+//       await user.save();
+//     }
+
+//     // Rename the generated token to avoid conflict
+//     const authToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+//       expiresIn: '1h',
+//     });
+
+//     res.json({ success: true, user, token: authToken });
+//   } catch (error) {
+//     console.error('Error during Google sign-in:', error);
+//     res.status(500).json({ success: false, message: 'Google sign-in failed' });
+//   }
+// };
 
 
 
@@ -183,22 +270,33 @@ exports.userSignIn = async (req, res) => {
       error: 'email / password does not match!',
     });
 
-  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+  const token = jwt.sign({ userId: user._id.toString() }, process.env.JWT_SECRET, {
     expiresIn: '1h',
   });
 
 
   const userInfo = {
+    id: user._id.toString(),
     name: user.name,
+    lastname: user.lastname || "", 
     email: user.email,
     admin: user.admin,
-    id: user._id,
-    avatar: user.avatar 
-    ? user.avatar : '',
-    // products:user.products._id
+    avatar: user.avatar || "",
+    picture: user.picture || "",
+    phone: user.phone || "",
+    verified: user.verified || false,
+    isGoogleUser: user.isGoogleUser || false,
+    eulaProductAccepted: user.eulaProductAccepted || false,
+    dateCreated: user.dateCreated,
+    report: user.report || false,
+    products: user.products || [],
+    resetPasswordToken: user.resetPasswordToken || null,
+    resetPasswordExpires: user.resetPasswordExpires || null,
   };
+
   req.user=user
 console.log(req.user.id);
+// console.log("API Response:", user); 
 
   res.json({ success: true, user: userInfo, token });
 };
@@ -560,76 +658,42 @@ exports.adminEditPassword = async (req, res) => {
 
 
 
-// Password reset route
-// exports.resetPassword = async (req, res) => {
-//   const { email, newPassword } = req.body;
+exports.updatePhone = async (req, res) => {
+  const { id } = req.params;
+  const { phone } = req.body;
 
-//   // Check if the user exists with the provided email
-//   const user = await User.findOne({ email: email.toLowerCase() });
-//   if (!user) {
-//     return res.status(400).json({ error: "User not found" });
-//   }
+  // Check if phone is provided
+  if (!phone) {
+    return res.status(400).json({ message: "Phone number is required." });
+  }
 
+  try {
+    // Find the user by ID and update the phone
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { phone },
+      { new: true } // Return the updated document
+    );
 
+    // If the user is not found
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
 
-//   // Hash the new password
-//   const salt = await bcrypt.genSalt(10);
-//   const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-//   // Update the user's password
-//   user.password = hashedPassword;
-//   await user.save();
-
-//   // Return success response
-//   res.json({ success: true, message: "Password has been reset successfully" });
-// };
-
-
-
-// Function to handle password reset request
-// app.post('/forgot-password', 
-  
-// exports.forgotPassword= async (req, res) => {
-//   const { email } = req.body;
-
-//   // Find the user by email
-//   const user = await User.findOne({ email });
-//   if (!user) {
-//     return res.status(404).send('User with that email does not exist');
-//   }
-
-//   // Generate a reset token
-//   const resetToken = crypto.randomBytes(32).toString('hex');
-//   const resetTokenExpiration = Date.now() + 3600000; // Token expires in 1 hour
-
-//   // Save the token and its expiration in the database
-//   user.resetPasswordToken = resetToken;
-//   user.resetPasswordExpires = resetTokenExpiration;
-//   await user.save();
-
-//   // Create the reset URL (front-end URL + token)
-//   const resetUrl = `localhost:5173//reset-password/${resetToken}`;
-
-//   // Send the email
-//   const transporter = nodemailer.createTransport({
-//     service: 'Gmail', // or any email provider
-//     auth: {
-//       user: process.env.EMAIL_USER,
-//       pass: process.env.EMAIL_PASSWORD,
-//     },
-//   });
-
-//   const mailOptions = {
-//     to: user.email,
-//     from: 'ericokyere021@gmail.com',
-//     subject: 'Password Reset Request',
-//     text: `You requested a password reset. Please click the link to reset your password: ${resetUrl}`
-//   };
-
-//   transporter.sendMail(mailOptions, (err) => {
-//     if (err) {
-//       return res.status(500).send('Error sending email');
-//     }
-//     res.status(200).send('Reset link sent to your email');
-//   });
-// };
+    // Return the updated user
+    res.json({
+      success: true,
+      message: "Phone number updated successfully.",
+      user: {
+        id: updatedUser._id,
+        name: updatedUser.name,
+        lastname: updatedUser.lastname,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating phone:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
