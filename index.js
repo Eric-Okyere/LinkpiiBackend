@@ -96,6 +96,12 @@ app.options("*", cors());
 app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
 app.use(cookieParser());
 
+app.use(cors({
+  origin: ["http://localhost:5173", "https://linkpii.com"],
+  credentials: true,
+}));
+
+
 app.use('/categories', categoriesRoutes);
 app.use(`/send`, productRouter);
 app.use("/", userRouter);

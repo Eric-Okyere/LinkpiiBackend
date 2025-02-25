@@ -33,10 +33,85 @@ cloudinary.config({
 // const client = new OAuth2Client(CLIENT_ID);
 
 
+// exports.googleSignIn = async (req, res) => {
+//   const { token } = req.body;
+
+//   try {
+//     // Verify Google token
+//     const ticket = await client.verifyIdToken({
+//       idToken: token,
+//       audience: process.env.GOOGLE_CLIENT_ID,
+//     });
+
+//     const payload = ticket.getPayload();
+//     const { email, given_name, family_name, picture } = payload;
+
+//     // Check if the user already exists
+//     let user = await User.findOne({ email });
+
+//     if (!user) {
+//       // If the user does not exist, create a new user
+//       user = new User({
+//         id: user._id.toString(),
+//         name: given_name || "Unknown",
+//         lastname: family_name || "Unknown",
+//         email,
+//         phone: "", // Default phone number
+//         password: "", // No password for Google sign-in
+//         avatar: picture, // Save Google profile picture
+//         picture, // Also save it in the 'picture' field
+//         isGoogleUser: true, // Flag indicating Google sign-in
+//       });
+
+//       // Save the new user to the database
+//       await user.save();
+//     }
+
+//     // Generate JWT token
+//     const authToken = jwt.sign({ userId: user._id.toString() }, process.env.JWT_SECRET, {
+//       expiresIn: '1h',
+//     });
+
+//     const userInfo = {
+//       id: user._id.toString(),  // Convert _id to id
+//       name: user.name,
+//       lastname: user.lastname || "",
+//       email: user.email,
+//       admin: user.admin || false,
+//       avatar: user.avatar || "",
+//       picture: user.picture || "",
+//       phone: user.phone || "",
+//       verified: user.verified || false,
+//       isGoogleUser: user.isGoogleUser || false,
+//       eulaProductAccepted: user.eulaProductAccepted || false,
+//       dateCreated: user.dateCreated,
+//       report: user.report || false,
+//       products: user.products || [],
+//       resetPasswordToken: user.resetPasswordToken || null,
+//       resetPasswordExpires: user.resetPasswordExpires || null,
+//     };
+
+//     // Send back user information and token
+//     res.json({ success: true, user: userInfo, token: authToken });
+//   } catch (error) {
+//     console.error('Error during Google sign-in:', error);
+//     res.status(500).json({ success: false, message: 'Google sign-in failed' });
+//   }
+// };
+
+
+
+
 exports.googleSignIn = async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173"); // Allow frontend
+    res.setHeader("Access-Control-Allow-Credentials", "true");
   const { token } = req.body;
 
   try {
+    if (!token) {
+      return res.status(400).json({ success: false, message: "Token is required" });
+    }
+
     // Verify Google token
     const ticket = await client.verifyIdToken({
       idToken: token,
@@ -50,20 +125,18 @@ exports.googleSignIn = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (!user) {
-      // If the user does not exist, create a new user
+      // Create a new user
       user = new User({
-        id: user._id.toString(),
         name: given_name || "Unknown",
         lastname: family_name || "Unknown",
         email,
         phone: "", // Default phone number
         password: "", // No password for Google sign-in
-        avatar: picture, // Save Google profile picture
-        picture, // Also save it in the 'picture' field
-        isGoogleUser: true, // Flag indicating Google sign-in
+        avatar: picture,
+        picture,
+        isGoogleUser: true,
       });
 
-      // Save the new user to the database
       await user.save();
     }
 
@@ -73,7 +146,7 @@ exports.googleSignIn = async (req, res) => {
     });
 
     const userInfo = {
-      id: user._id.toString(),  // Convert _id to id
+      id: user._id.toString(),
       name: user.name,
       lastname: user.lastname || "",
       email: user.email,
@@ -91,7 +164,6 @@ exports.googleSignIn = async (req, res) => {
       resetPasswordExpires: user.resetPasswordExpires || null,
     };
 
-    // Send back user information and token
     res.json({ success: true, user: userInfo, token: authToken });
   } catch (error) {
     console.error('Error during Google sign-in:', error);
@@ -99,45 +171,6 @@ exports.googleSignIn = async (req, res) => {
   }
 };
 
-
-// exports.googleSignIn = async (req, res) => {
-//   const { token } = req.body;  // Token from frontend
-
-//   try {
-//     // Verify the token
-//     const ticket = await client.verifyIdToken({
-//       idToken: token,
-//       audience: process.env.GOOGLE_CLIENT_ID,
-//     });
-
-//     const payload = ticket.getPayload();
-//     const { email, name, picture } = payload;
-
-//     let user = await User.findOne({ email });
-
-//     if (!user) {
-//       user = new User({
-//         name,
-//         email,
-//         avatar: picture,
-//         verified: true,
-//         password: "",
-//       });
-
-//       await user.save();
-//     }
-
-//     // Rename the generated token to avoid conflict
-//     const authToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-//       expiresIn: '1h',
-//     });
-
-//     res.json({ success: true, user, token: authToken });
-//   } catch (error) {
-//     console.error('Error during Google sign-in:', error);
-//     res.status(500).json({ success: false, message: 'Google sign-in failed' });
-//   }
-// };
 
 
 
