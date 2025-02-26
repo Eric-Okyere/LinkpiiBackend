@@ -27,11 +27,8 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    validate: {
-      validator: function () {
-        return !this.isGoogleUser || (this.isGoogleUser && this.password);
-      },
-      message: "Password is required unless signing in with Google."
+    required: function () {
+      return !this.isGoogleUser; // Require password only if not a Google user
     }
   },
   
