@@ -103,8 +103,7 @@ cloudinary.config({
 
 
 exports.googleSignIn = async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173"); // Allow frontend
-    res.setHeader("Access-Control-Allow-Credentials", "true");
+  
   const { token } = req.body;
 
   try {
