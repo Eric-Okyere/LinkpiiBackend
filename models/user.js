@@ -23,11 +23,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    lowercase: true,
   },
   password: {
     type: String,
-    default:""
+    validate: {
+      validator: function () {
+        return !this.isGoogleUser || (this.isGoogleUser && this.password);
+      },
+      message: "Password is required unless signing in with Google."
+    }
   },
+  
   verified: {
     type: Boolean,
     default: false,
@@ -69,30 +76,29 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// Pre-save hook for hashing the password
+
 userSchema.pre('save', async function (next) {
-  if (this.isModified('password') && this.password) {
-    try {
-      // Ensure password is hashed only if it's a plain text password
-      const salt = await bcrypt.genSalt(10);
-      this.password = await bcrypt.hash(this.password, salt);
-    } catch (err) {
-      return next(err);
-    }
+  if (this.isModified('password') && !this.password.startsWith('$2b$')) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
   }
   next();
 });
 
-// Method to compare passwords
+
+// Method to compare passwords securely
 userSchema.methods.comparePassword = async function (password) {
-  if (!password) throw new Error('Password is missing, cannot compare!');
-  
+  if (!password) throw new Error('Password is required for comparison.');
+
   try {
-    const result = await bcrypt.compare(password, this.password);
-    return result;
+    return await bcrypt.compare(password, this.password);
   } catch (error) {
-    console.log('Error while comparing password:', error.message);
+    console.error('Error comparing password:', error);
+    return false;
   }
 };
+
+
+
 
 module.exports = mongoose.model('users', userSchema);

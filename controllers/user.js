@@ -217,8 +217,11 @@ exports.deleteUser = async (req, res) => {
 
 
 
+
+
+
 exports.createUser = async (req, res) => {
-  const { name, email, password,  phone, lastname } = req.body;
+  const { name, email, password, phone, lastname } = req.body;
 
   console.log("Received request:", req.body);
 
@@ -227,48 +230,40 @@ exports.createUser = async (req, res) => {
     return res.status(400).json({ message: "Invalid email format" });
   }
 
-  // Check if the email domain is either @gmail.com, @email.com, or @yahoo.com
   const allowedDomains = ["@gmail.com", "@email.com", "@yahoo.com"];
   const emailDomain = email.toLowerCase().substring(email.indexOf('@'));
-  
-  // If email does not belong to allowed domains, return an error
+
   if (!allowedDomains.includes(emailDomain)) {
     return res.status(400).json({ message: "Invalid email domain." });
   }
 
   console.log("Is Valid Domain:", allowedDomains.includes(emailDomain));
 
-
   // Check if the email is already in use
-  const user = await User.findOne({ email: email.toLowerCase() });
-  if (user) {
+  const existingUser = await User.findOne({ email: email.toLowerCase() });
+  if (existingUser) {
     return res.status(400).json({ message: "Email already in use. Please login" });
   }
 
-  // Hash the password before saving
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-  // Create a new user object
+  // Create new user WITHOUT manual password hashing
   const newUser = new User({
     name,
     lastname,
     email: email.toLowerCase(),
     phone,
-    password: hashedPassword,  // Save hashed password
+    password,  // Do NOT hash here, let Mongoose middleware handle it
   });
 
-  // Save the new user to the database
+  // Save the new user
   await newUser.save();
 
-  // Return success response
   res.json({
     success: true,
     user: {
       name: newUser.name,
       lastname: newUser.lastname,
       email: newUser.email,
-      phoneno: newUser.phone,
+      phone: newUser.phone,
       id: newUser._id,
       verified: newUser.verified,
     },
@@ -281,58 +276,40 @@ exports.createUser = async (req, res) => {
 
 
 
-
-
-
 exports.userSignIn = async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
+    const user = await User.findOne({ email: email.toLowerCase() });
 
-  const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found with the given email!' });
+    }
 
-  if (!user)
-    return res.json({
-      success: false,
-      error: 'user not found, with the given email!',
-    });
+    if (user.isGoogleUser) {
+      return res.status(403).json({ success: false, error: 'Please log in using Google.' });
+    }
 
-  const isMatch = await user.comparePassword(password);
-  if (!isMatch)
-    return res.json({
-      success: false,
-      error: 'email / password does not match!',
-    });
+    if (!user.password) {
+      return res.status(400).json({ success: false, error: 'Invalid credentials!' });
+    }
 
-  const token = jwt.sign({ userId: user._id.toString() }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
-  });
+    console.log(`Comparing password: ${password} with hashed: ${user.password}`);
 
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, error: 'Email or password does not match!' });
+    }
 
-  const userInfo = {
-    id: user._id.toString(),
-    name: user.name,
-    lastname: user.lastname || "", 
-    email: user.email,
-    admin: user.admin,
-    avatar: user.avatar || "",
-    picture: user.picture || "",
-    phone: user.phone || "",
-    verified: user.verified || false,
-    isGoogleUser: user.isGoogleUser || false,
-    eulaProductAccepted: user.eulaProductAccepted || false,
-    dateCreated: user.dateCreated,
-    report: user.report || false,
-    products: user.products || [],
-    resetPasswordToken: user.resetPasswordToken || null,
-    resetPasswordExpires: user.resetPasswordExpires || null,
-  };
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-  req.user=user
-console.log(req.user.id);
-// console.log("API Response:", user); 
-
-  res.json({ success: true, user: userInfo, token });
+    res.json({ success: true, user: { id: user._id, email: user.email }, token });
+  } catch (error) {
+    console.error('Login Error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
 };
+
 
 
 exports.verifyEmail = async (req, res)=>{
