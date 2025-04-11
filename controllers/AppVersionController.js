@@ -24,6 +24,14 @@ exports.createAppVersion = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
 // Other existing functions...
 exports.getAppVersion = async (req, res) => {
   try {
@@ -42,6 +50,10 @@ exports.getAppVersion = async (req, res) => {
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 };
+
+
+
+
 
 
 exports.updateAppVersion = async (req, res) => {
