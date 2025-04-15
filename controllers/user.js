@@ -23,8 +23,79 @@ cloudinary.config({
 
 
 
-exports.googleSignIn = async (req, res) => {
+// exports.googleSignIn = async (req, res) => {
   
+//   const { token } = req.body;
+
+//   try {
+//     if (!token) {
+//       return res.status(400).json({ success: false, message: "Token is required" });
+//     }
+
+//     // Verify Google token
+//     const ticket = await client.verifyIdToken({
+//       idToken: token,
+//       audience: [process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_IOS_CLIENT_ID, process.env.ANDROID_CLIENT_ID, process.env.GOOGLE_CLIENT_ID_RELEASE]
+//     });
+
+//     const payload = ticket.getPayload();
+//     const { email, given_name, family_name, picture } = payload;
+
+//     // Check if the user already exists
+//     let user = await User.findOne({ email });
+
+//     if (!user) {
+//       // Create a new user
+//       user = new User({
+//         name: given_name || "Unknown",
+//         lastname: family_name || "Unknown",
+//         email,
+//         phone: "", // Default phone number
+//         password: "", // No password for Google sign-in
+//         avatar: picture,
+//         picture,
+//         isGoogleUser: true,
+//       });
+
+//       await user.save();
+//     }
+
+//     // Generate JWT token
+//     const authToken = jwt.sign({ userId: user._id.toString() }, process.env.JWT_SECRET, {
+//       expiresIn: '1h',
+//     });
+
+//     const userInfo = {
+//       id: user._id.toString(),
+//       name: user.name,
+//       lastname: user.lastname || "",
+//       email: user.email,
+//       admin: user.admin || false,
+//       avatar: user.avatar || "",
+//       picture: user.picture || "",
+//       phone: user.phone || "",
+//       verified: user.verified || false,
+//       isGoogleUser: user.isGoogleUser || false,
+//       eulaProductAccepted: user.eulaProductAccepted || false,
+//       dateCreated: user.dateCreated,
+//       report: user.report || false,
+//       products: user.products || [],
+//       resetPasswordToken: user.resetPasswordToken || null,
+//       resetPasswordExpires: user.resetPasswordExpires || null,
+//     };
+
+//     res.json({ success: true, user: userInfo, token: authToken });
+//   } catch (error) {
+//     console.error('Error during Google sign-in:', error);
+//     res.status(500).json({ success: false, message: 'Google sign-in failed' });
+//   }
+// };
+
+
+
+
+
+exports.googleSignIn = async (req, res) => {
   const { token } = req.body;
 
   try {
@@ -32,13 +103,26 @@ exports.googleSignIn = async (req, res) => {
       return res.status(400).json({ success: false, message: "Token is required" });
     }
 
+    // Log the token (temporarily for debugging purposes)
+    console.log("📦 Received token:", token.slice(0, 40) + "...");
+
     // Verify Google token
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: [process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_IOS_CLIENT_ID, process.env.ANDROID_CLIENT_ID, process.env.GOOGLE_CLIENT_ID_RELEASE]
+      audience: [
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_IOS_CLIENT_ID,
+        process.env.ANDROID_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_ID_RELEASE
+      ]
     });
 
     const payload = ticket.getPayload();
+
+    // Log what audience the token is actually for
+    console.log("✅ Token verified. Audience:", payload.aud);
+    console.log("📧 Email:", payload.email);
+
     const { email, given_name, family_name, picture } = payload;
 
     // Check if the user already exists
@@ -86,8 +170,9 @@ exports.googleSignIn = async (req, res) => {
 
     res.json({ success: true, user: userInfo, token: authToken });
   } catch (error) {
-    console.error('Error during Google sign-in:', error);
-    res.status(500).json({ success: false, message: 'Google sign-in failed' });
+    console.error("❌ Google sign-in error:", error.message);
+    console.error(error); // Full error output
+    res.status(500).json({ success: false, message: "Google sign-in failed" });
   }
 };
 
