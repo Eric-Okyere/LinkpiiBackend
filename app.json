@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "farmapp",
+    "slug": "farmapp",
+    "version": "1.0.0",
+    "description": "backend for farm app",
+    "sdkVersion": "51.0.0",
+    "platforms": [],
+    "android": {
+      "package": "com.ericok.palm"
+    }
+  }
+}
