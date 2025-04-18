@@ -1,12 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const Appointment = require("../models/Appointment");
+const Appointment = require("../models/Car/Appointment");
 
 // ✅ Create an appointment
 router.post("/", async (req, res) => {
+  console.log("Request body:", req.body);
   try {
-    const { username, userphone, drivername } = req.body;
-    const newAppointment = new Appointment({ username, userphone, drivername });
+    const { username, userphone, drivername, driverphone, time, datepick, userlocation, region, location, desregion, deslocation } = req.body;
+    const newAppointment = new Appointment({ username, userphone, drivername, driverphone, time, datepick, userlocation, region, location, desregion, deslocation });
+    // Validate required fields
+    // if (!username || !userphone || !drivername || !driverphone || !time || !datepick || !userlocation || !region || !location) {
+    //   return res.status(400).json({ error: "All fields are required" });
+    // }
     const savedAppointment = await newAppointment.save();
     res.status(201).json(savedAppointment);
   } catch (err) {

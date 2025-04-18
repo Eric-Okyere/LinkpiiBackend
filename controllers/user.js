@@ -112,7 +112,6 @@ exports.googleSignIn = async (req, res) => {
       audience: [
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_IOS_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_ID_RELEASE
       ]
     });
 
