@@ -69,7 +69,7 @@ const reqt = require("./routes/Coments/request")
 const Version = require("./controllers/Version")
 const appVersionRoutes = require("./routes/Appversion")
 const iOSappVersionRoutes = require("./routes/iOSAppVersion")
-const Appointment = require("./routes/Appintment")
+const Appointment = require("./routes/Appointment")
 
 
 // Define the writable directory path

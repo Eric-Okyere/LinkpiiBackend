@@ -15,6 +15,7 @@ const resetToken = require('../models/resetToken');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 
+
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -112,6 +113,8 @@ exports.googleSignIn = async (req, res) => {
       audience: [
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_IOS_CLIENT_ID,
+        process.env.ANDROIDCLIENTID,
+        process.env.GOOGLE_CLIENT_ID_RELEASE,
       ]
     });
 
@@ -305,8 +308,9 @@ exports.userSignIn = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
     res.json({ success: true, user: { id: user._id, email: user.email }, token });
+
+    
   } catch (error) {
     console.error('Login Error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
@@ -708,5 +712,22 @@ exports.updatePhone = async (req, res) => {
   } catch (error) {
     console.error("Error updating phone:", error);
     res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+
+
+exports.pushNotification =  async (req, res) => {
+  const { id } = req.params;
+  const { pushToken } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(id, { pushToken }, { new: true });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({ message: 'Push token saved', pushToken });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error saving push token' });
   }
 };

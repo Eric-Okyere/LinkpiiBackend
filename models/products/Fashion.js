@@ -67,6 +67,10 @@ const EmployeeSchema = mongoose.Schema({
     type: Boolean,
     default: false
   },
+  hot: {
+    type: Boolean,
+    default: false
+  },
   views: {
     type: Number,
     default: 6

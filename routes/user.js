@@ -19,7 +19,8 @@ const {
 changePassword,
 adminEditPassword,
 googleSignIn,
-updatePhone
+updatePhone,
+pushNotification
 } = require('../controllers/user');
 
 const {
@@ -54,6 +55,7 @@ router.put('/changepass', changePassword);
 router.put('/editpass/:id', adminEditPassword);
 router.put('/phone/:id', updatePhone);
 router.post('/auth/google-signin', googleSignIn);
+router.put('notifications/:id/push-token', pushNotification);
 
 
 

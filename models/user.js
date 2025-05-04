@@ -67,6 +67,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  ghback: {
+    type: String,
+    default: ""
+  },
   isGoogleUser: {
     type: Boolean,
     default: false,
