@@ -426,8 +426,8 @@ router.post('/', upload.fields([
     const messages = users.map(user => ({
       to: user.pushToken,
       sound: 'default',
-      title: '🛍 New Product Posted!',
-      body: `${name} is now available!`,
+      title: '🛍 New products on Linkpii',
+      body: `${name} is now available! Check it out.`,
       data: { productId: savedProduct._id },
     }));
 

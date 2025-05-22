@@ -33,14 +33,18 @@ exports.getAppVersion = async (req, res) => {
     }
 
     res.status(200).json({
+      _id: appVersion._id,
       latestVersion: appVersion.latestVersion,
       updateMessage: appVersion.updateMessage,
+      __v: appVersion.__v,
     });
   } catch (error) {
     console.error('Error fetching app version:', error);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 };
+
+
 
 exports.updateAppVersion = async (req, res) => {
   const { id } = req.params;
