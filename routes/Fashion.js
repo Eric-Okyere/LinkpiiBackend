@@ -18,7 +18,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Configure Multer to use Cloudinary as storage
+
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
@@ -30,11 +30,11 @@ const storage = new CloudinaryStorage({
         resource_type: 'video',
         format: 'mp4',
         transformation: [
-          { width: 600, height: 300, crop: 'limit' }, // Limit to 640x360 resolution
-          { quality: 'auto:best' }, // Set lower quality for compression
-          { video_codec: 'h264' }, // Use H.264 codec for better compression
-          { bit_rate: '1500k' }, // Limit the bitrate to 500 kbps
-          { audio_codec: 'aac', audio_frequency: 48000 }, // Compress audio as well
+          { width: 600, height: 300, crop: 'limit' }, 
+          { quality: 'auto:best' }, 
+          { video_codec: 'h264' }, 
+          { bit_rate: '1500k' }, 
+          { audio_codec: 'aac', audio_frequency: 48000 }, 
           { duration: "10.0" }
         ]
       };
@@ -420,7 +420,6 @@ router.post('/', upload.fields([
 
     const savedProduct = await newProduct.save();
 
-    // 🔔 Send push notification to users
     const users = await User.find({ pushToken: { $ne: null } });
 
     const messages = users.map(user => ({

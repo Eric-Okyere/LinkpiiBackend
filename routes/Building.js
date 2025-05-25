@@ -6,7 +6,7 @@ require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { Buildingcat } = require('../models/categories/buildingCats');
 const { Buildings } = require('../models/Building/building');
-
+const User = require('../models/user');
 
 
 
@@ -219,6 +219,79 @@ router.get('/:id/related', async (req, res) => {
 });
 
 
+// Get hot products
+ router.get(`/hot`, async (req, res) => {
+  try {
+    const approvedProducts = await Buildings.find({ hot: true, approved:true }).populate("category").populate("commentsec").sort({boost:-1, dateCreated: -1 });
+
+    res.json(approvedProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+router.get('/hot/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Buildings.findOne({ _id: id, hot: true,approved:true })
+      .populate("category")
+      .populate("commentsec");
+
+    if (!product) {
+      return res.status(404).json({ error: 'Hot product not found' });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+router.get('/:id/hotrelated', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const currentProduct = await Buildings.findById(productId).populate('category');
+    if (!currentProduct) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    const relatedProducts = await Buildings.find({
+      category: currentProduct.category._id,
+      _id: { $ne: productId },
+      approved: true, hot: true
+    })
+      .populate('category')
+      .populate('author')
+      .sort({ boost: -1, dateCreated: -1 })
+      .limit(5);
+
+    if (!relatedProducts.length) {
+      return res.status(404).json({ success: false, message: 'No related products found' });
+    }
+
+    res.json(relatedProducts);
+  } catch (error) {
+    console.error('Error in related products route:', error.message);
+    res.status(500).json({ success: false, error: 'Internal Server Error' });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 router.post('/', upload.fields([
   { name: 'picture', maxCount: 1 },
   { name: 'picturesec', maxCount: 1 },
@@ -252,8 +325,36 @@ router.post('/', upload.fields([
       video: video, 
     });
 
-    // Save the product to the database
+   
     const savedProduct = await newProduct.save();
+
+
+      const users = await User.find({ pushToken: { $ne: null } });
+    
+        const messages = users.map(user => ({
+          to: user.pushToken,
+          sound: 'default',
+          title: '🛍 New products on Linkpii',
+          body: `${name} is now available! Check it out.`,
+          data: { productId: savedProduct._id },
+        }));
+    
+        const chunks = [];
+        for (let i = 0; i < messages.length; i += 100) {
+          chunks.push(messages.slice(i, i + 100));
+        }
+    
+        for (const chunk of chunks) {
+          await fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Accept-Encoding': 'gzip, deflate',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(chunk),
+          });
+        }
 
     res.json(savedProduct);
   } catch (error) {
@@ -384,6 +485,29 @@ router.put('/:id/deactivate', async (req, res) => {
         return res.status(400).json({success: false, error: err})
     })
  })
+
+
+ router.put("/:id/hot", async (req, res) => {
+   const { id } = req.params; 
+ 
+   try {
+     
+     const employee = await Buildings.findByIdAndUpdate(
+       id, 
+       { hot: true }, 
+       { new: true } 
+     );
+ 
+     if (!employee) {
+       return res.status(404).json({ message: 'Products not found' });
+     }
+ 
+     return res.status(200).json({ message: 'Product sent to hot mode successfully', employee });
+   } catch (error) {
+     console.error(error);
+     return res.status(500).json({ message: 'Server Error' });
+   }
+ });
 
  
 
