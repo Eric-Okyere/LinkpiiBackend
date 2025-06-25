@@ -67,6 +67,10 @@ const EmployeeSchema = mongoose.Schema({
     type: Boolean,
     default: false
   },
+  hot: {
+    type: Boolean,
+    default: false
+  },
   comments: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment'

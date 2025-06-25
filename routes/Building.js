@@ -189,6 +189,49 @@ router.get('/region/accra', async (req, res) => {
   }
 });
 
+
+
+router.get("/hot/building", async (req, res) => {
+  try {
+    const hotProducts = await Buildings.find({ hot: true, approved:true })
+      .populate("category")  
+      .populate("author")    
+      .sort({ boost: -1, dateCreated: -1 });
+
+    if (!hotProducts || hotProducts.length === 0) {
+      return res.status(404).json({ success: false, message: "No hot products found" });
+    }
+
+    return res.status(200).json(hotProducts);
+  } catch (error) {
+    console.error("Error fetching hot products:", error);
+    return res.status(500).json({ success: false, message: "Server Error", error: error.message });
+  }
+});
+
+
+
+router.get('/hot/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Buildings.findOne({ _id: id })
+      .populate("category")
+
+    if (!product) {
+      return res.status(404).json({ error: 'Hot product not found' });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+
 router.get('/:id/related', async (req, res) => {
   try {
     const productId = req.params.id;
@@ -200,7 +243,7 @@ router.get('/:id/related', async (req, res) => {
     const relatedProducts = await Buildings.find({
       category: currentProduct.category._id,
       _id: { $ne: productId },
-      approved: true,
+      approved: true, 
     })
       .populate('category')
       .populate('author')
@@ -218,38 +261,6 @@ router.get('/:id/related', async (req, res) => {
   }
 });
 
-
-// Get hot products
- router.get(`/hot`, async (req, res) => {
-  try {
-    const approvedProducts = await Buildings.find({ hot: true, approved:true }).populate("category").populate("commentsec").sort({boost:-1, dateCreated: -1 });
-
-    res.json(approvedProducts);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
-router.get('/hot/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const product = await Buildings.findOne({ _id: id, hot: true,approved:true })
-      .populate("category")
-      .populate("commentsec");
-
-    if (!product) {
-      return res.status(404).json({ error: 'Hot product not found' });
-    }
-
-    res.json(product);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 
 
 router.get('/:id/hotrelated', async (req, res) => {
@@ -280,16 +291,6 @@ router.get('/:id/hotrelated', async (req, res) => {
     res.status(500).json({ success: false, error: 'Internal Server Error' });
   }
 });
-
-
-
-
-
-
-
-
-
-
 
 
 router.post('/', upload.fields([
@@ -363,6 +364,7 @@ router.post('/', upload.fields([
   }
 });
   
+
   
  
   router.put('/:id', upload.fields([

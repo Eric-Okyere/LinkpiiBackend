@@ -133,6 +133,28 @@ router.get('/products/:productId', async (req, res) => {
 });
 
 
+router.get("/hot/shops", async (req, res) => {
+  try {
+    const hotProducts = await Shops.find({ hot: true, approved:true })
+      .populate("category")  
+      .populate("author")    
+      .sort({ boost: -1, dateCreated: -1 });
+
+    if (!hotProducts || hotProducts.length === 0) {
+      return res.status(404).json({ success: false, message: "No hot products found" });
+    }
+
+    return res.status(200).json(hotProducts);
+  } catch (error) {
+    console.error("Error fetching hot products:", error);
+    return res.status(500).json({ success: false, message: "Server Error", error: error.message });
+  }
+});
+
+
+
+
+
 router.get('/:id/related', async (req, res) => {
   try {
     const productId = req.params.id;
@@ -163,16 +185,6 @@ router.get('/:id/related', async (req, res) => {
 });
 
 
- router.get(`/hot`, async (req, res) => {
-  try {
-    const approvedProducts = await Shops.find({ hot: true, approved:true }).populate("category").populate("commentsec").sort({boost:-1, dateCreated: -1 });
-
-    res.json(approvedProducts);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 
 
 router.get('/hot/:id', async (req, res) => {
@@ -444,6 +456,27 @@ router.put("/:id/hot", async (req, res) => {
  })
 
  
+  router.put("/:id/hot", async (req, res) => {
+    const { id } = req.params; 
+  
+    try {
+      
+      const employee = await Shops.findByIdAndUpdate(
+        id, 
+        { hot: true }, 
+        { new: true } 
+      );
+  
+      if (!employee) {
+        return res.status(404).json({ message: 'Products not found' });
+      }
+  
+      return res.status(200).json({ message: 'Product sent to hot mode successfully', employee });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Server Error' });
+    }
+  });
 
  
  module.exports = router;

@@ -257,9 +257,9 @@ router.get('/:id/related', async (req, res) => {
 });
 
 
- router.get(`/hot`, async (req, res) => {
+ router.get(`/agric/hot`, async (req, res) => {
   try {
-    const approvedProducts = await Product.find({ hot: true, approved:true }).populate("category").populate("commentsec").sort({boost:-1, dateCreated: -1 });
+    const approvedProducts = await Product.find({ hot: true, approved:true }).populate("category").sort({boost:-1, dateCreated: -1 });
 
     res.json(approvedProducts);
   } catch (error) {
