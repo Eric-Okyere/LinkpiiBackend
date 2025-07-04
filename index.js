@@ -70,6 +70,8 @@ const Version = require("./controllers/Version")
 const appVersionRoutes = require("./routes/Appversion")
 const iOSappVersionRoutes = require("./routes/iOSAppVersion")
 const Appointment = require("./routes/Appointment")
+const FoodCats = require("./routes/FoodCats")
+const Food = require("./routes/Food")
 
 
 // Define the writable directory path
@@ -165,6 +167,8 @@ app.use("/version", Version)
 app.use('/appversion', appVersionRoutes);
 app.use('/iosappversion', iOSappVersionRoutes);
 app.use('/appointment', Appointment);
+app.use('/foodcat', FoodCats);
+app.use('/food', Food);
 
 
 const PORT = process.env.PORT || 3000;

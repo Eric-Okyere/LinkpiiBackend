@@ -20,7 +20,8 @@ changePassword,
 adminEditPassword,
 googleSignIn,
 updatePhone,
-pushNotification
+pushNotification,
+LastSeen
 } = require('../controllers/user');
 
 const {
@@ -37,6 +38,7 @@ router.get("/userbyid/:id",getUserById)
 router.get("/getUsers/count", userCount)
 router.delete("/deleteUser/:id",deleteUser)
 router.put('/:id/report', Report);
+router.put('/:id/lastseen', LastSeen);
 router.put('/:id/rectify', Rectified);
 router.put('/eula/:id/eula', EULA);
 router.put('/eula/:id/eulapost', EULAPost);

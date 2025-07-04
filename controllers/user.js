@@ -484,6 +484,28 @@ exports.Report = async (req, res) => {
   }
 };
 
+exports.LastSeen = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { lastSeen: new Date() },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({ success: true, lastSeen: user.lastSeen });
+  } catch (error) {
+    console.error('Error updating lastSeen:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
 exports.Rectified = async (req, res) => {
   const productId = req.params.id;
 

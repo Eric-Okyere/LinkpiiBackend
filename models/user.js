@@ -79,6 +79,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  lastSeen: {
+    type: Date,
+    default: Date.now
+  },
 });
 
 
