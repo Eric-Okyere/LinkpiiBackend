@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: function () {
-      return !this.isGoogleUser; // Require password only if not a Google user
+      return !this.isGoogleUser; 
     }
   },
   
@@ -78,6 +78,14 @@ const userSchema = new mongoose.Schema({
   pushToken: {
     type: String,
     default: null
+  },
+  signin: {
+    type: Boolean,
+    default: false
+  },
+  platfUsed: {
+    type: Number,
+    default: 1
   },
   lastSeen: {
     type: Date,

@@ -312,6 +312,8 @@ exports.userSignIn = async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ success: true, user: { id: user._id, email: user.email }, token });
 
+    user.signin = true;
+    await user.save();
     
   } catch (error) {
     console.error('Login Error:', error);
@@ -490,7 +492,9 @@ exports.LastSeen = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
       userId,
-      { lastSeen: new Date() },
+      {
+        $set: { lastSeen: new Date() },
+      },
       { new: true }
     );
 
@@ -498,12 +502,13 @@ exports.LastSeen = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    res.json({ success: true, lastSeen: user.lastSeen });
+    res.json({ success: true, lastSeen: user.lastSeen, platfUsed: user.platfUsed });
   } catch (error) {
-    console.error('Error updating lastSeen:', error);
+    console.error('Error updating lastSeen and platfUsed:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
 
 
 exports.Rectified = async (req, res) => {
@@ -753,5 +758,33 @@ exports.pushNotification =  async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error saving push token' });
+  }
+};
+
+
+exports.incrementPlatfUsed = async (req, res) => {
+  const userId = req.params.id;
+
+  
+    try {
+      // Find the product by ID
+      const product = await User.findById(userId);
+  
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+  
+      // Increment the view count
+      product.platfUsed++;
+  
+      // Save the updated product document
+      await product.save();
+  
+      // Return the product details with the updated view count
+      return res.json(product);
+    
+  } catch (error) {
+    console.error('Error incrementing platfUsed:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
