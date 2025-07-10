@@ -58,6 +58,14 @@ const EmployeeSchema = mongoose.Schema({
     type: String,
     default: 0
   },
+  numofBoost: {
+    type: Number,
+    default: 0
+  },
+  numofHot: {
+    type: Number,
+    default: 0
+  },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
   dateCreated: {
     type: Date,
@@ -75,6 +83,15 @@ const EmployeeSchema = mongoose.Schema({
     type: Number,
     default: 6
   },
+  dateBoost:{
+    type:Date,
+    default:Date.now
+  },
+  dateHot:{
+    type:Date,
+    default:Date.now
+  },
+  
   boost: {
     type: Boolean,
     default: false

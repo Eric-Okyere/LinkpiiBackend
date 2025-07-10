@@ -96,7 +96,7 @@ router.get(`/`, async (req,res)=>{
 
  router.get(`/approved`, async (req, res) => {
   try {
-    const approvedProducts = await Product.find({ approved: true }).populate("category").populate("commentsec").sort({boost:-1, dateCreated: -1 });
+    const approvedProducts = await Product.find({ approved: true }).populate("category").populate("commentsec").sort({boost:-1, dateBoost: -1,dateCreated:-1 });
 
     res.json(approvedProducts);
   } catch (error) {
@@ -108,7 +108,7 @@ router.get(`/`, async (req,res)=>{
 // Get hot products
  router.get(`/hot`, async (req, res) => {
   try {
-    const approvedProducts = await Product.find({ hot: true, approved:true }).populate("category").populate("commentsec").sort({boost:-1, dateCreated: -1 });
+    const approvedProducts = await Product.find({ hot: true, approved:true }).populate("category").populate("commentsec").sort({ dateHot: -1 });
 
     res.json(approvedProducts);
   } catch (error) {
@@ -548,19 +548,31 @@ router.put('/:id/approve', async (req, res) => {
   }
 });
 
+
 router.put('/:id/boost', async (req, res) => {
   const productId = req.params.id;
 
   try {
-    // Find the product by ID and update its boost field to true
-    const product = await Product.findByIdAndUpdate(productId, { boost: true, dateCreated: Date.now() }, { new: true });
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      {
+        $set: {
+          boost: true,
+          dateBoost: Date.now(),
+        },
+        $inc: {
+          numofBoost: 1,
+        },
+      },
+      { new: true }
+    );
 
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    // Fetch all approved products, sorting by the boost field in descending order
-    const allApprovedProducts = await Product.find({ approved: true }).sort({ boost: -1, dateCreated: -1 });
+    // Get all approved products sorted by boost and dateCreated
+    const allApprovedProducts = await Product.find({ approved: true }).sort({ boost: -1, dateBoost: -1 });
 
     res.json(allApprovedProducts);
   } catch (error) {
@@ -568,6 +580,8 @@ router.put('/:id/boost', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
 
 router.put('/:id/deactivate', async (req, res) => {
   const productId = req.params.id;
@@ -589,26 +603,36 @@ router.put('/:id/deactivate', async (req, res) => {
 
 
 router.put("/:id/hot", async (req, res) => {
-  const { id } = req.params; // Extract employee ID from URL parameters
+  const { id } = req.params;
 
   try {
-    // Find the employee by ID and update 'hot' to true
-    const employee = await Product.findByIdAndUpdate(
-      id, 
-      { hot: true }, 
-      { new: true } // Return the updated document
-    );
-
-    if (!employee) {
-      return res.status(404).json({ message: 'Products not found' });
+    const product = await Product.findById(id);
+    
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
     }
 
-    return res.status(200).json({ message: 'Product sent to hot mode successfully', employee });
+    // Set hot, dateHot, and increment numofHot
+    product.hot = true;
+    product.dateHot = Date.now();
+    product.numofHot = (product.numofHot || 0) + 1;
+
+    await product.save();
+
+    return res.status(200).json({
+      message: 'Product sent to hot mode successfully',
+      product,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Server Error' });
   }
 });
+
+
+
+
+
 
 
 
