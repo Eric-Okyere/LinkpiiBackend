@@ -5,6 +5,10 @@ const FoodSchema = mongoose.Schema({
     type: String,
     require: true
   },
+  description: {
+    type: String,
+    require: true
+  },
   foodtypes: {
     type: String,
     require: true
@@ -27,7 +31,14 @@ const FoodSchema = mongoose.Schema({
     type: String,
     default: ""
   },
-
+  latitude: {
+  type: Number,
+  required: true
+},
+longitude: {
+  type: Number,
+  required: true
+},
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'FoodCats',
@@ -70,13 +81,23 @@ const FoodSchema = mongoose.Schema({
     type: Boolean,
     default: false
   },
+    numofBoost: {
+    type: Number,
+    default: 0
+  },
+   dateBoost:{
+    type:Date,
+    default:Date.now
+  },
     hot: {
     type: Boolean,
     default: false
   },
+  openingTime: { type: String, default: "" },
+  closingTime: { type: String, default: "" },
   comments: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Comment'
+    ref: 'Foodcomment'
   }]
 });
 

@@ -27,6 +27,7 @@ router.get('/:id', async (req, res) => {
 });
 
 
+
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -36,17 +37,23 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'upload',
-    format: 'jpg',
-    transformation: [
-      { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
-      { quality: 'auto:eco', fetch_format: 'auto' }
-    ]
+  params: async (req, file) => {
+    let folder = 'upload';
+
+    return {
+      folder: folder,
+      format: 'jpg',
+      transformation: [
+        { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
+        { quality: 'auto:eco', fetch_format: 'auto' }
+      ]
+    };
   },
 });
 
 const upload = multer({ storage: storage });
+
+
 
 
 router.post('/', upload.single('picture'), async (req, res) => {

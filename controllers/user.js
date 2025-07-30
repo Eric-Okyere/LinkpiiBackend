@@ -13,6 +13,7 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const resetToken = require('../models/resetToken');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const {decrypt} = require('../utils/encryption');
 
 
 
@@ -184,13 +185,27 @@ exports.googleSignIn = async (req, res) => {
 
 
 
-exports.getUsers = async (req,res)=>{
-  const productList = await User.find().sort({ dateCreated: -1 })
-  if(!productList){
-      res.status(500).json({success: false})
+exports.getUsers = async (req, res) => {
+  try {
+    const users = await User.find().sort({ dateCreated: -1 }).lean();
+
+    const decryptedUsers = users.map((user) => {
+      try {
+        if (user.avatar) user.avatar = decrypt(user.avatar);
+        if (user.picture) user.picture = decrypt(user.picture);
+        if (user.ghback) user.ghback = decrypt(user.ghback);
+      } catch (err) {
+        console.warn(`Decryption skipped for user ${user._id}:`, err.message);
+      }
+      return user;
+    });
+
+    res.json(decryptedUsers);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-  res.send(productList)
-}
+};
 
 exports.userCount= async (req, res) => {
   try { 
@@ -373,17 +388,64 @@ exports.getUserById = async (req, res) => {
   }
 
   try {
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).lean();
+
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    // Attempt decryption only if field is non-null
+    const tryDecrypt = (value) => {
+      if (!value) return null;
+      try {
+        return decrypt(value);
+      } catch (err) {
+        console.warn(`Decryption failed for value: ${value}. Returning as-is.`);
+        return value; // Fallback if not encrypted
+      }
+    };
+
+    user.avatar = tryDecrypt(user.avatar);
+    user.picture = tryDecrypt(user.picture);
+    user.ghback = tryDecrypt(user.ghback);
+
     res.json(user);
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching user:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+// Old get User by Id
+// exports.getUserById = async (req, res) => {
+//   const userId = req.params.id;
+
+//   if (!isValidObjectId(userId)) {
+//     return res.status(400).json({ success: false, message: 'Invalid user ID' });
+//   }
+
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: 'User not found' });
+//     }
+
+//     res.json(user);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// };
 
 
 

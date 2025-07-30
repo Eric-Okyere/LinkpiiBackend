@@ -72,19 +72,20 @@ const iOSappVersionRoutes = require("./routes/iOSAppVersion")
 const Appointment = require("./routes/Appointment")
 const FoodCats = require("./routes/FoodCats")
 const Food = require("./routes/Food")
+const FoodComment = require("./routes/Coments/FoodComment")
 
 
-// Define the writable directory path
+
 const writableDirectoryPath = path.join(__dirname, 'farmbackend');
 
-// Ensure the directory exists
+
 if (!fs.existsSync(writableDirectoryPath)) {
   try {
     fs.mkdirSync(writableDirectoryPath, { recursive: true });
     console.log(`Writable directory created at: ${writableDirectoryPath}`);
   } catch (error) {
     console.error(`Error creating directory: ${error.message}`);
-    process.exit(1); // Exit the process with failure
+    process.exit(1); 
   }
 }
 
@@ -169,6 +170,7 @@ app.use('/iosappversion', iOSappVersionRoutes);
 app.use('/appointment', Appointment);
 app.use('/foodcat', FoodCats);
 app.use('/food', Food);
+app.use('/foodcomment', FoodComment);
 
 
 const PORT = process.env.PORT || 3000;

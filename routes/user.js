@@ -6,7 +6,7 @@ const {
   userSignIn,
   verifyEmail,
   forgotPassword,
-  getUsers,
+ getUsers,
   deleteUser,
   getUserById,
   userCount,
@@ -24,6 +24,7 @@ pushNotification,
 LastSeen,
 incrementPlatfUsed
 } = require('../controllers/user');
+
 
 const {
   validateUserSignUp,
