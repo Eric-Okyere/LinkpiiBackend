@@ -8,7 +8,6 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const fs = require('fs');
 const path = require('path');
-
 require("./models/products/products");
 
 const userRouter = require('./routes/user');

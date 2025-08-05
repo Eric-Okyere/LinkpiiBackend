@@ -105,7 +105,7 @@ router.get("/", async (req, res) => {
 
  router.get(`/approved`, async (req, res) => {
   try {
-    const approvedProducts = await Food.find({ approved: true }).populate("category").populate("comments").sort({boost:-1, dateBoost: -1,dateCreated:-1 });
+    const approvedProducts = await Food.find({ approved: true }).populate("category").sort({dateCreated:-1 });
 
     res.json(approvedProducts);
   } catch (error) {
