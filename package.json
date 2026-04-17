@@ -7,10 +7,13 @@
   "license": "MIT",
   "scripts": {
     "start": "nodemon index.js",
-    "build": "npm install",
+    "build": "npm install --legacy-peer-deps",
     "android": "expo run:android",
     "ios": "expo run:ios"
   },
+  "config": {
+  "npm_config_legacy_peer_deps": "true"
+},
   "dependencies": {
     "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
