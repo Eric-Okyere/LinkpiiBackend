@@ -1,17 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const {Product} = require('../models/products/products')
+const { Product } = require('../models/products/products');
 const multer = require('multer');
-const cloudinary = require("cloudinary").v2
-// const sharp = require('sharp');
-require("dotenv/config")
+const cloudinary = require("cloudinary").v2;
+require("dotenv/config");
+
+// THE FIX: Destructure CloudinaryStorage from the package
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
 const { Car } = require('../models/Car/CarModel');
 const { Category } = require('../models/categories/categories');
 const User = require('../models/user');
 
-
-
+// Cloudinary Configuration
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -22,28 +23,28 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
-    let folder = 'upload';
-
+    const folder = 'upload';
+    
     if (file.mimetype.startsWith('video')) {
       return {
         folder: folder,
-        resource_type: 'video',
+        resource_type: 'video', 
         format: 'mp4',
         transformation: [
-          { width: 600, height: 300, crop: 'limit' }, // Limit to 640x360 resolution
-          { quality: 'auto:best' }, // Set lower quality for compression
-          { video_codec: 'h264' }, // Use H.264 codec for better compression
-          { bit_rate: '1500k' }, // Limit the bitrate to 500 kbps
-          { audio_codec: 'aac', audio_frequency: 48000 }, // Compress audio as well
+          { width: 600, height: 300, crop: 'limit' },
+          { quality: 'auto:best' },
+          { video_codec: 'h264' },
+          { bit_rate: '1500k' },
+          { audio_codec: 'aac' },
           { duration: "10.0" }
         ]
       };
     }
-    // 700x360
 
     return {
       folder: folder,
       format: 'jpg',
+      resource_type: 'image',
       transformation: [
         { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
         { quality: 'auto:eco', fetch_format: 'auto' }
@@ -54,272 +55,159 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage: storage });
 
+/* -------------------------------------------------------------------------- */
+/* GET ROUTES                                  */
+/* -------------------------------------------------------------------------- */
 
+// Get all products
+router.get(`/`, async (req, res) => {
+  const productList = await Product.find().populate("category").populate("author").sort({ dateCreated: -1 });
+  if (!productList) return res.status(500).json({ success: false });
+  res.send(productList);
+});
 
-
-
-router.get(`/`, async (req,res)=>{
-  
-    const productList = await Product.find().populate("category").populate("author").sort({ dateCreated: -1 })
-    if(!productList){
-        res.status(500).json({success: false})
-    }
-    res.send(productList)
- })
-
-
- router.get("/detail", async (req, res) => {
+// Category Detail (Categories with their approved products)
+router.get("/detail", async (req, res) => {
   try {
-      // Find all categories
-      const categories = await Category.find();
-
-      // Array to store category with approved products
-      const categoriesWithApprovedProducts = [];
-
-      // Iterate through each category
-      for (const category of categories) {
-          // Find products associated with the category where approved is true
-          const products = await Product.find({ category: category._id, approved: true });
-
-          // Add category with approved products to the result array
-          categoriesWithApprovedProducts.push({
-              // category: category,
-              products: products
-          });
-      }
-
-      res.json(categoriesWithApprovedProducts);
+    const categories = await Category.find();
+    const categoriesWithApprovedProducts = [];
+    for (const category of categories) {
+      const products = await Product.find({ category: category._id, approved: true });
+      categoriesWithApprovedProducts.push({ products: products });
+    }
+    res.json(categoriesWithApprovedProducts);
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-
+// Approved products list
 router.get('/approved', async (req, res) => {
   try {
-    // Find all products, populating the category field, and sorting by the boost field first in descending order,
-    // then by the dateCreated field in descending order
-    const productList = await Product.find({ approved: true }).populate("category").sort({boost:-1, dateCreated: -1 });
-
-    if (!productList) {
-      return res.status(500).json({ success: false });
-    }
-
-    
+    const productList = await Product.find({ approved: true }).populate("category").sort({ boost: -1, dateCreated: -1 });
+    if (!productList) return res.status(500).json({ success: false });
     res.send(productList);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
+// Approved cars
 router.get('/car/approved', async (req, res) => {
   try {
-    const approvedProducts = await Car.find({ approved: true }).sort({ dateCreated: -1 })
-
+    const approvedProducts = await Car.find({ approved: true }).sort({ dateCreated: -1 });
     res.json(approvedProducts);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
- 
- router.get(`/:id`, async (req,res)=>{
-    const product = await Product.findById(req.params.id).populate('category')
-    if(!product){
-        res.status(500).json({success: false})
-    }
-    res.send(product)
- })
 
- router.get('/user/:id',async(req, res)=>{
-    console.log(req.params.id)
-    const userItems=await Product.find({author:req.params.id}).populate("category").sort({ dateCreated: -1 })
+// Single product by ID
+router.get(`/:id`, async (req, res) => {
+  const product = await Product.findById(req.params.id).populate('category');
+  if (!product) return res.status(500).json({ success: false });
+  res.send(product);
+});
 
-    // res.send({success:'true',userItems})
-    res.send(userItems)
-})
+// User-specific products
+router.get('/user/:id', async (req, res) => {
+  const userItems = await Product.find({ author: req.params.id }).populate("category").sort({ dateCreated: -1 });
+  res.send(userItems);
+});
 
-
+// Product View Counter
 router.get('/products/:productId', async (req, res) => {
-  const productId = req.params.productId;
-
   try {
-    // Find the product by ID
-    const product = await Product.findById(productId);
-
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-
-    // Increment the view count
+    const product = await Product.findById(req.params.productId);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
     product.views++;
-
-    // Save the updated product document
     await product.save();
-
-    // Return the product details with the updated view count
     return res.json(product);
   } catch (error) {
-    console.error('Error viewing product:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-
-
-
+// Total count
 router.get('/get/count', async (req, res) => {
   try {
     const productCount = await Product.countDocuments();
     res.json(productCount);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// Search by region
-router.get('/region/accra', async (req, res) => {
-  try {
-    const accraProducts = await Product.find({ region: 'Accra' }).populate("category").sort({ dateCreated: -1 });
-
-    if (!accraProducts) {
-      return res.status(404).json({ message: 'No products found with region set to "accra"' });
+// Region Filtering
+const regions = ['accra', 'central', 'kumasi'];
+regions.forEach(region => {
+  router.get(`/region/${region}`, async (req, res) => {
+    try {
+      const formattedRegion = region.charAt(0).toUpperCase() + region.slice(1);
+      const products = await Product.find({ region: formattedRegion }).populate("category").sort({ dateCreated: -1 });
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ error: 'Internal Server Error' });
     }
-
-    res.json(accraProducts);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
+  });
 });
 
-router.get('/region/central', async (req, res) => {
-  try {
-    const accraProducts = await Product.find({ region: 'Central' }).populate("category").sort({ dateCreated: -1 });
-
-    if (!accraProducts) {
-      return res.status(404).json({ message: 'No products found with region set to "accra"' });
-    }
-
-    res.json(accraProducts);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-router.get('/region/kumasi', async (req, res) => {
-  try {
-    const accraProducts = await Product.find({ region: 'Kumasi' }).populate("category").sort({ dateCreated: -1 });
-
-    if (!accraProducts) {
-      return res.status(404).json({ message: 'No products found with region set to "accra"' });
-    }
-
-    res.json(accraProducts);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
+// Related Products
 router.get('/:id/related', async (req, res) => {
   try {
-    const productId = req.params.id;
-    const currentProduct = await Product.findById(productId).populate('category');
-    if (!currentProduct) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
-    }
-
+    const currentProduct = await Product.findById(req.params.id);
+    if (!currentProduct) return res.status(404).json({ success: false, message: 'Product not found' });
     const relatedProducts = await Product.find({
-      category: currentProduct.category._id,
-      _id: { $ne: productId },
+      category: currentProduct.category,
+      _id: { $ne: req.params.id },
       approved: true,
-    })
-      .populate('category')
-      .populate('author')
-      .sort({ boost: -1, dateCreated: -1 })
-      .limit(5);
-
-    if (!relatedProducts.length) {
-      return res.status(404).json({ success: false, message: 'No related products found' });
-    }
-
+    }).populate('category').populate('author').sort({ boost: -1, dateCreated: -1 }).limit(5);
     res.json(relatedProducts);
   } catch (error) {
-    console.error('Error in related products route:', error.message);
     res.status(500).json({ success: false, error: 'Internal Server Error' });
   }
 });
 
-
- router.get(`/agric/hot`, async (req, res) => {
+// Hot Products list
+router.get(`/agric/hot`, async (req, res) => {
   try {
-    const approvedProducts = await Product.find({ hot: true, approved:true }).populate("category").sort({boost:-1, dateCreated: -1 });
-
+    const approvedProducts = await Product.find({ hot: true, approved: true }).populate("category").sort({ boost: -1, dateCreated: -1 });
     res.json(approvedProducts);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-
+// Hot Product Detail
 router.get('/hot/:id', async (req, res) => {
-  const { id } = req.params;
-
   try {
-    const product = await Product.findOne({ _id: id, hot: true,approved:true })
-      .populate("category")
-      .populate("commentsec");
-
-    if (!product) {
-      return res.status(404).json({ error: 'Hot product not found' });
-    }
-
+    const product = await Product.findOne({ _id: req.params.id, hot: true, approved: true }).populate("category").populate("commentsec");
+    if (!product) return res.status(404).json({ error: 'Hot product not found' });
     res.json(product);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-
+// Hot Related Products
 router.get('/:id/hotrelated', async (req, res) => {
   try {
-    const productId = req.params.id;
-    const currentProduct = await Product.findById(productId).populate('category');
-    if (!currentProduct) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
-    }
-
+    const currentProduct = await Product.findById(req.params.id);
+    if (!currentProduct) return res.status(404).json({ success: false, message: 'Product not found' });
     const relatedProducts = await Product.find({
-      category: currentProduct.category._id,
-      _id: { $ne: productId },
+      category: currentProduct.category,
+      _id: { $ne: req.params.id },
       approved: true, hot: true
-    })
-      .populate('category')
-      .populate('author')
-      .sort({ boost: -1, dateCreated: -1 })
-      .limit(5);
-
-    if (!relatedProducts.length) {
-      return res.status(404).json({ success: false, message: 'No related products found' });
-    }
-
+    }).populate('category').populate('author').sort({ boost: -1, dateCreated: -1 }).limit(5);
     res.json(relatedProducts);
   } catch (error) {
-    console.error('Error in related products route:', error.message);
     res.status(500).json({ success: false, error: 'Internal Server Error' });
   }
 });
 
-
- 
+/* -------------------------------------------------------------------------- */
+/* POST / PUT ROUTES                           */
+/* -------------------------------------------------------------------------- */
 
 router.post('/', upload.fields([
   { name: 'picture', maxCount: 1 },
@@ -327,37 +215,20 @@ router.post('/', upload.fields([
   { name: 'video', maxCount: 1 },
 ]), async (req, res) => {
   try {
-    // Extract data from the request
-    const { name, phone,price, whatsapp, description, location, region, town, category } = req.body;
-
-    // Check if files are present in the request
+    const { name, phone, price, whatsapp, description, location, region, town, category } = req.body;
     const picture = req.files['picture'] ? req.files['picture'][0].path : null;
     const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
     const video = req.files['video'] ? req.files['video'][0].path : null;
 
-    // Create a new product instance
     const newProduct = new Product({
-      name,
-      phone,
-      whatsapp,
-      description,
-      price,
-      location,
-      region,
-      town,
-      category,
-      author: req.body.userId,
-      picture: picture, 
-      picturesec: picturesec, 
-      video: video, 
+      name, phone, whatsapp, description, price, location, region, town, category,
+      author: req.body.userId, picture, picturesec, video
     });
 
-    // Save the product to the database
     const savedProduct = await newProduct.save();
 
-
-const users = await User.find({ pushToken: { $ne: null } });
-
+    // Notification Logic
+    const users = await User.find({ pushToken: { $ne: null } });
     const messages = users.map(user => ({
       to: user.pushToken,
       sound: 'default',
@@ -366,35 +237,18 @@ const users = await User.find({ pushToken: { $ne: null } });
       data: { productId: savedProduct._id },
     }));
 
-    const chunks = [];
     for (let i = 0; i < messages.length; i += 100) {
-      chunks.push(messages.slice(i, i + 100));
-    }
-
-    for (const chunk of chunks) {
       await fetch('https://exp.host/--/api/v2/push/send', {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Accept-Encoding': 'gzip, deflate',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(chunk),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(messages.slice(i, i + 100)),
       });
     }
-
-
-    
-
     res.json(savedProduct);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-
-
 
 router.put('/:id', upload.fields([
   { name: 'picture', maxCount: 1 },
@@ -402,146 +256,71 @@ router.put('/:id', upload.fields([
   { name: 'video', maxCount: 1 },
 ]), async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, phone,price, whatsapp, description, location, region, town, category } = req.body;
+    const shopItem = await Product.findById(req.params.id);
+    if (!shopItem) return res.status(404).json({ error: 'Shop item not found' });
 
-    // Find the shop item by ID
-    const shopItem = await Product.findById(id);
-    if (!shopItem) {
-      return res.status(404).json({ error: 'Shop item not found' });
-    }
+    Object.assign(shopItem, req.body);
+    if (req.files['picture']) shopItem.picture = req.files['picture'][0].path;
+    if (req.files['picturesec']) shopItem.picturesec = req.files['picturesec'][0].path;
+    if (req.files['video']) shopItem.video = req.files['video'][0].path;
 
-    // Update fields
-    shopItem.name = name || shopItem.name;
-    shopItem.price = price || shopItem.price;
-    shopItem.phone = phone || shopItem.phone;
-    shopItem.whatsapp = whatsapp || shopItem.whatsapp;
-    shopItem.description = description || shopItem.description;
-    shopItem.location = location || shopItem.location;
-    shopItem.region = region || shopItem.region;
-    shopItem.town = town || shopItem.town;
-    shopItem.category = category || shopItem.category;
-    shopItem.author = req.body.userId || shopItem.author;
-
-    // Update files if new ones are uploaded
-    if (req.files['picture']) {
-      shopItem.picture = req.files['picture'][0].path;
-    }
-    if (req.files['picturesec']) {
-      shopItem.picturesec = req.files['picturesec'][0].path;
-    }
-    if (req.files['video']) {
-      shopItem.video = req.files['video'][0].path;
-    }
-
-    // Save the updated shop item
     const updatedShopItem = await shopItem.save();
-
     res.json(updatedShopItem);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 
 router.put('/:id/boost', async (req, res) => {
-  const productId = req.params.id;
-
   try {
-    // Find the product by ID and update its boost field to true
-    const product = await Product.findByIdAndUpdate(productId, { boost: true ,dateCreated: Date.now()}, { new: true });
-
-    if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
-    }
-
-    // Fetch all approved products, sorting by the boost field in descending order
+    await Product.findByIdAndUpdate(req.params.id, { boost: true, dateCreated: Date.now() });
     const allApprovedProducts = await Product.find({ approved: true }).sort({ boost: -1, dateCreated: -1 });
-
     res.json(allApprovedProducts);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-
-
-
 router.put('/:id/approve', async (req, res) => {
-  const productId = req.params.id;
-
   try {
-    const product = await Product.findByIdAndUpdate(productId, { approved: true, }, { new: true });
-
-    if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
-    }
-
+    const product = await Product.findByIdAndUpdate(req.params.id, { approved: true }, { new: true });
     res.json(product);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
 router.put('/:id/deactivate', async (req, res) => {
-  const productId = req.params.id;
-
   try {
-    const product = await Product.findByIdAndUpdate(productId, { approved: false }, { new: true });
-
-    if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
-    }
-
+    const product = await Product.findByIdAndUpdate(req.params.id, { approved: false }, { new: true });
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
     res.json(product);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-
 router.put("/:id/hot", async (req, res) => {
-  const { id } = req.params; // Extract employee ID from URL parameters
-
   try {
-    // Find the employee by ID and update 'hot' to true
-    const employee = await Product.findByIdAndUpdate(
-      id, 
-      { hot: true }, 
-      { new: true } // Return the updated document
-    );
-
-    if (!employee) {
-      return res.status(404).json({ message: 'Products not found' });
-    }
-
+    const employee = await Product.findByIdAndUpdate(req.params.id, { hot: true }, { new: true });
+    if (!employee) return res.status(404).json({ message: 'Products not found' });
     return res.status(200).json({ message: 'Product sent to hot mode successfully', employee });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ message: 'Server Error' });
   }
 });
 
+/* -------------------------------------------------------------------------- */
+/* DELETE ROUTES                               */
+/* -------------------------------------------------------------------------- */
 
+router.delete("/:id", (req, res) => {
+  Product.findByIdAndDelete(req.params.id).then(user => {
+    if (user) return res.status(200).json({ success: true, message: "deleted successfully" });
+    return res.status(404).json({ success: false, message: "not found" });
+  }).catch(err => {
+    return res.status(400).json({ success: false, error: err });
+  });
+});
 
-
- router.delete("/:id",(req, res)=>{
-    Product.findByIdAndRemove(req.params.id).then(user=>{
-        if(user){
-            return res.status(200).json({success:true, message:"the users is deleted successfully"})
-        } else{
-            return res.status(404).json({success: false, message: "users not found"})
-        }
-    }).catch(err=>{
-        return res.status(400).json({success: false, error: err})
-    })
- })
-
- 
-
- 
- module.exports = router;
+module.exports = router;
