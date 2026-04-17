@@ -171,6 +171,29 @@ app.use('/foodcat', FoodCats);
 app.use('/food', Food);
 app.use('/foodcomment', FoodComment);
 
+app.use((req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is offline. Please check your internet connection."
+    });
+  }
+  next();
+});
+
+// Catch unhandled promise rejections (like Mongo timeouts)
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Application specific logging here
+});
+
+// Catch uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception thrown:', err);
+  // Optional: Graceful shutdown if error is critical
+  // process.exit(1); 
+});
+
 
 const PORT = process.env.PORT || 3000;
 
@@ -180,13 +203,11 @@ mongoose.connect(process.env.CONNECTION_STRING, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   dbName: "farm",
+  serverSelectionTimeoutMS: 5000, // Fail after 5 seconds instead of 30+
+  heartbeatFrequencyMS: 2000,     // Check connection every 2 seconds
 })
-  .then(() => {
-    console.log("Mongo is ready");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+.then(() => console.log("Mongo is ready"))
+.catch((err) => console.error("Initial connection error:", err.message));
 
 app.listen(PORT, () => {
   console.log(api);

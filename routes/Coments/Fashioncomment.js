@@ -100,10 +100,5 @@ router.delete('/comments/:commentId', async (req, res) => {
   }
 });
 
-
-
-
-
-
   module.exports = router;
   

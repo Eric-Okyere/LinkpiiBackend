@@ -24,28 +24,29 @@ const storage = new CloudinaryStorage({
   params: async (req, file) => {
     let folder = 'upload';
 
+    // Video Logic (Keep as is or adjust duration)
     if (file.mimetype.startsWith('video')) {
       return {
         folder: folder,
         resource_type: 'video',
         format: 'mp4',
         transformation: [
-          { width: 600, height: 300, crop: 'limit' }, 
-          { quality: 'auto:best' }, 
-          { video_codec: 'h264' }, 
-          { bit_rate: '1500k' }, 
-          { audio_codec: 'aac', audio_frequency: 48000 }, 
-          { duration: "10.0" }
+          { width: 640, height: 360, crop: 'limit' }, // Standard widescreen limit
+          { quality: 'auto' }, 
+          { duration: "15.0" } // Increased slightly for better product viewing
         ]
       };
     }
 
+    // Image Logic: Showing the FULL picture
     return {
       folder: folder,
       format: 'jpg',
       transformation: [
-        { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
-        { quality: 'auto:eco', fetch_format: 'auto' }
+        // 'limit' ensures the image is never larger than 1000px 
+        // but keeps its original shape (no cropping)
+        { width: 1000, height: 1000, crop: 'limit' }, 
+        { quality: 'auto:good', fetch_format: 'auto' }
       ]
     };
   },
@@ -169,7 +170,7 @@ router.get('/:id/hotrelated', async (req, res) => {
 
  
  router.get(`/:id`, async (req,res)=>{
-    const product = await Product.findById(req.params.id).populate('category')
+    const product = await Product.findById(req.params.id).populate('category').populate("comments").populate('author')
     if(!product){
         res.status(500).json({success: false})
     }
@@ -288,99 +289,6 @@ router.get('/:id/related', async (req, res) => {
 
 
 
-
-  // router.post('/', upload.fields([
-  //   { name: 'picture', maxCount: 1 },
-  //   { name: 'picturesec', maxCount: 1 },
-  //   { name: 'video', maxCount: 1 },
-  // ]), async (req, res) => {
-  //   try {
-  //     // Extract data from the request
-  //     const { name, phone,price, whatsapp, description, location, region, town, category, condition, discount } = req.body;
-  
-  //     // Check if files are present in the request
-  //     const picture = req.files['picture'] ? req.files['picture'][0].path : null;
-  //     const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
-  //     const video = req.files['video'] ? req.files['video'][0].path : null;
-  
-  //     // Create a new product instance
-  //     const newProduct = new Product({
-  //       name,
-  //       discount,
-  //       phone,
-  //       whatsapp,
-  //       description,
-  //       price,
-  //       location,
-  //       condition,
-  //       region,
-  //       town,
-  //       category,
-  //       author: req.body.userId,
-  //       picture: picture, // Use the path provided by multer
-  //       picturesec: picturesec, // Use the path provided by multer
-  //       video: video, // Use the path provided by multer
-  //     });
-  
-  //     // Save the product to the database
-  //     const savedProduct = await newProduct.save();
-  
-  //     res.json(savedProduct);
-  //   } catch (error) {
-  //     console.error(error);
-  //     res.status(500).json({ error: 'Internal Server Error' });
-  //   }
-  // });
-
-
-
-  
-
-
-// router.post('/products', async (req, res) => {
-//   try {
-//     const newProduct = new Product(req.body);
-//     await newProduct.save();
-
-//     // Get all users with push tokens
-//     const users = await User.find({ pushToken: { $ne: null } });
-
-//     const messages = users.map(user => ({
-//       to: user.pushToken,
-//       sound: 'default',
-//       title: '🛍 New Product Posted!',
-//       body: `${req.body.name} is now available!`,
-//       data: { productId: newProduct._id },
-//     }));
-
-//     // Send in batches of 100
-//     const chunks = [];
-//     for (let i = 0; i < messages.length; i += 100) {
-//       chunks.push(messages.slice(i, i + 100));
-//     }
-
-//     // Send to Expo server
-//     for (const chunk of chunks) {
-//       await fetch('https://exp.host/--/api/v2/push/send', {
-//         method: 'POST',
-//         headers: {
-//           Accept: 'application/json',
-//           'Accept-Encoding': 'gzip, deflate',
-//           'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify(chunk),
-//       });
-//     }
-
-//     res.status(201).json({ message: 'Product posted and users notified!', product: newProduct });
-
-//   } catch (error) {
-//     console.error('Error:', error);
-//     res.status(500).json({ error: 'Server error posting product' });
-//   }
-// });
-
-  
  
 
 
