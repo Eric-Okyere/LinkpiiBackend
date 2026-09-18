@@ -510,21 +510,23 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     // Create the reset URL (front-end URL + token)
-    const resetUrl = `https://linkpiireset.netlify.app/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL || 'https://linkpii.com'}/reset-password/${resetToken}`;
 
-    // Send the email
+    // Send the email via Gmail SMTP (a Google App Password, not the account
+    // password - see the SMTP_* comments in .env for setup steps).
     const transporter = nodemailer.createTransport({
-      host: process.env.MAILTRAP_HOST,
-      port: process.env.MAILTRAP_PORT,
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: process.env.SMTP_SECURE === 'true',
       auth: {
-        user: process.env.MAILTRAP_USERNAME,
-        pass: process.env.MAILTRAP_PASSWORD,
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
       },
     });
 
     const mailOptions = {
       to: user.email,
-      from: 'linkpiiapp@gmail.com',
+      from: `"Linkpii" <${process.env.SMTP_USER}>`,
       subject: 'Password Reset Request',
       text: `You requested a password reset. Please click the link to reset your password: ${resetUrl}`,
     };
