@@ -482,50 +482,60 @@ exports.getUserById = async (req, res) => {
 
 
 // Function to handle password reset request
-exports.forgotPassword= async (req, res) => {
-  const { email } = req.body;
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
 
-  // Find the user by email
-  const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(404).send('User with that email does not exist');
-  }
-
-  // Generate a reset token
-  const resetToken = crypto.randomBytes(32).toString('hex');
-  const resetTokenExpiration = Date.now() + 3600000; // Token expires in 1 hour
-
-  // Save the token and its expiration in the database
-  user.resetPasswordToken = resetToken;
-  user.resetPasswordExpires = resetTokenExpiration;
-  await user.save();
-
-  // Create the reset URL (front-end URL + token)
-  const resetUrl = `https://linkpiireset.netlify.app/reset-password/${resetToken}`;
-
-  // Send the email
-  const transporter = nodemailer.createTransport({
-    host: process.env.MAILTRAP_HOST, 
-    port: process.env.MAILTRAP_PORT,
-    auth: {
-      user: process.env.MAILTRAP_USERNAME,
-      pass: process.env.MAILTRAP_PASSWORD,
-    },
-  });
-
-  const mailOptions = {
-    to: user.email,
-    from: 'linkpiiapp@gmail.com',
-    subject: 'Password Reset Request',
-    text: `You requested a password reset. Please click the link to reset your password: ${resetUrl}`
-  };
-
-  transporter.sendMail(mailOptions, (err) => {
-    if (err) {
-      return res.status(500).send('Error sending email');
+    if (!email || !emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid email address' });
     }
-    res.status(200).send('Reset link sent to your email');
-  });
+
+    // Find the user by email (emails are stored lowercase)
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User with that email does not exist' });
+    }
+
+    if (user.isGoogleUser) {
+      return res.status(400).json({ success: false, message: 'This account signs in with Google. Password reset is not available.' });
+    }
+
+    // Generate a reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiration = Date.now() + 3600000; // Token expires in 1 hour
+
+    // Save the token and its expiration in the database
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetTokenExpiration;
+    await user.save();
+
+    // Create the reset URL (front-end URL + token)
+    const resetUrl = `https://linkpiireset.netlify.app/reset-password/${resetToken}`;
+
+    // Send the email
+    const transporter = nodemailer.createTransport({
+      host: process.env.MAILTRAP_HOST,
+      port: process.env.MAILTRAP_PORT,
+      auth: {
+        user: process.env.MAILTRAP_USERNAME,
+        pass: process.env.MAILTRAP_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      to: user.email,
+      from: 'linkpiiapp@gmail.com',
+      subject: 'Password Reset Request',
+      text: `You requested a password reset. Please click the link to reset your password: ${resetUrl}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.status(200).json({ success: true, message: 'Reset link sent to your email' });
+  } catch (error) {
+    console.error('Error in forgotPassword:', error);
+    return res.status(500).json({ success: false, message: 'Error sending reset email' });
+  }
 };
 
 
@@ -663,28 +673,37 @@ exports.updateUserPicture = async (req, res) => {
 
 
 // Reset password endpoint
-exports.resetPassword= async (req, res) => {
-  const { token } = req.params;
-  const { newPassword } = req.body;
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { newPassword } = req.body;
 
-  // Find user by the reset token and ensure the token is not expired
-  const user = await User.findOne({
-    resetPasswordToken: token,
-    resetPasswordExpires: { $gt: Date.now() }
-  });
+    if (!newPassword || newPassword.length < 4) {
+      return res.status(400).json({ success: false, message: 'New password is too weak' });
+    }
 
-  if (!user) {
-    return res.status(400).send('Invalid or expired token');
+    // Find user by the reset token and ensure the token is not expired
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired token' });
+    }
+
+    // Set the new password (the pre-save hook on the User model hashes it)
+    user.password = newPassword;
+    user.resetPasswordToken = undefined; // Clear the reset token
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    return res.status(200).json({ success: true, message: 'Password has been reset' });
+  } catch (error) {
+    console.error('Error in resetPassword:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
-
-  // Set the new password
-  user.password = newPassword;
-  user.resetPasswordToken = undefined;  // Clear the reset token
-  user.resetPasswordExpires = undefined;
-  
-  await user.save();
-
-  res.status(200).send('Password has been reset');
 };
 
 
@@ -709,12 +728,13 @@ exports.changePassword = async (req, res) => {
       return res.status(400).json({ success: false, message: "Current password is incorrect" });
     }
 
-    // Step 3: Hash the new password
-    const saltRounds = 10;
-    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+    // Step 3: Validate the new password
+    if (!newPassword || newPassword.length < 4) {
+      return res.status(400).json({ success: false, message: "New password is too weak" });
+    }
 
-    // Step 4: Update the user's password in the database
-    user.password = hashedNewPassword;
+    // Step 4: Update the user's password (the pre-save hook on the User model hashes it)
+    user.password = newPassword;
     await user.save();
 
     // Step 5: Send a success response
@@ -742,19 +762,15 @@ exports.adminEditPassword = async (req, res) => {
     }
 
     // Step 2: Validate new password strength
-    if (newPassword.length < 4) { // Example: 8 characters minimum
+    if (!newPassword || newPassword.length < 4) { // Example: 8 characters minimum
       return res.status(400).json({ success: false, message: "New password is too weak" });
     }
 
-    // Step 3: Hash the new password
-    const saltRounds = 10;
-    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
-
-    // Step 4: Update the user's password in the database
-    user.password = hashedNewPassword;
+    // Step 3: Update the user's password (the pre-save hook on the User model hashes it)
+    user.password = newPassword;
     await user.save();
 
-    // Step 5: Send a success response
+    // Step 4: Send a success response
     return res.status(200).json({ success: true, message: "Password reset successfully" });
 
   } catch (error) {
