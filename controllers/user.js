@@ -10,7 +10,7 @@ const cloudinary = require("cloudinary").v2
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const bcrypt = require("bcryptjs");
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const resetToken = require('../models/resetToken');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const {decrypt} = require('../utils/encryption');
@@ -512,26 +512,23 @@ exports.forgotPassword = async (req, res) => {
     // Create the reset URL (front-end URL + token)
     const resetUrl = `${process.env.FRONTEND_URL || 'https://linkpii.com'}/reset-password/${resetToken}`;
 
-    // Send the email via Gmail SMTP (a Google App Password, not the account
-    // password - see the SMTP_* comments in .env for setup steps).
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
+    // Send the email via Resend's HTTP API (plain HTTPS, so it works on
+    // Render's free tier, which blocks outbound SMTP ports). Requires
+    // RESEND_API_KEY in .env and a verified sending domain in Resend.
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
-    const mailOptions = {
+    const { error: resendError } = await resend.emails.send({
+      from: 'Linkpii <no-reply@linkpii.com>',
       to: user.email,
-      from: `"Linkpii" <${process.env.SMTP_USER}>`,
       subject: 'Password Reset Request',
       text: `You requested a password reset. Please click the link to reset your password: ${resetUrl}`,
-    };
+      html: `<p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>This link expires in 1 hour. If you didn't request this, you can ignore this email.</p>`,
+    });
 
-    await transporter.sendMail(mailOptions);
+    if (resendError) {
+      console.error('Resend error in forgotPassword:', resendError);
+      return res.status(500).json({ success: false, message: 'Error sending reset email' });
+    }
 
     return res.status(200).json({ success: true, message: 'Reset link sent to your email' });
   } catch (error) {
