@@ -4,7 +4,8 @@ const router = express.Router();
 const {
   createUser,
   userSignIn,
-  verifyEmail,
+  verifyEmailCode,
+  resendVerificationCode,
   forgotPassword,
  getUsers,
   deleteUser,
@@ -52,7 +53,8 @@ validateUserSignUp,
 );
 // router.post('/auth/google', googleSignin);
 router.post('/sign-in', userSignIn);
-router.post('/verify-email/:token', verifyEmail);
+router.post('/verify-email-code', verifyEmailCode);
+router.post('/resend-verification-code', resendVerificationCode);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.put('/changepass', changePassword);

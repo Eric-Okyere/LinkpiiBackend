@@ -59,11 +59,11 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: false,
   },
-  verificationToken: {
+  verificationCode: {
     type: String,
     required: false,
   },
-  verificationTokenExpires: {
+  verificationCodeExpires: {
     type: Date,
     required: false,
   },

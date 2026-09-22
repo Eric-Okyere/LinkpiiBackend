@@ -279,24 +279,23 @@ exports.createUser = async (req, res) => {
   // Save the new user
   await newUser.save();
 
-  // Generate an email-verification token and send the verification email via
-  // Resend (same HTTP API used for password resets). Sending failures are
-  // logged but never block signup - the account is already created.
+  // Generate a 6-digit email-verification code and send it via Resend
+  // (same HTTP API used for password resets). Sending failures are logged
+  // but never block signup - the account is already created.
   try {
-    const verificationTokenValue = crypto.randomBytes(32).toString('hex');
-    newUser.verificationToken = verificationTokenValue;
-    newUser.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    const verificationCodeValue = Math.floor(100000 + Math.random() * 900000).toString();
+    newUser.verificationCode = verificationCodeValue;
+    newUser.verificationCodeExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
     await newUser.save();
 
-    const verifyUrl = `${process.env.FRONTEND_URL || 'https://linkpii.com'}/verify-email/${verificationTokenValue}`;
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const { error: verifyEmailError } = await resend.emails.send({
       from: 'Linkpii <no-reply@linkpii.com>',
       to: newUser.email,
       subject: 'Verify your Linkpii email address',
-      text: `Welcome to Linkpii! Please verify your email by clicking this link: ${verifyUrl}`,
-      html: `<p>Welcome to Linkpii! Please verify your email address by clicking the link below:</p><p><a href="${verifyUrl}">${verifyUrl}</a></p><p>This link expires in 24 hours.</p>`,
+      text: `Welcome to Linkpii! Your verification code is: ${verificationCodeValue}. This code expires in 30 minutes.`,
+      html: `<p>Welcome to Linkpii!</p><p>Your verification code is:</p><p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${verificationCodeValue}</p><p>This code expires in 30 minutes.</p>`,
     });
 
     if (verifyEmailError) {
@@ -353,7 +352,7 @@ exports.userSignIn = async (req, res) => {
     if (!user.verified) {
       return res.status(403).json({
         success: false,
-        error: 'Please verify your email before logging in. Check your inbox for the verification link we sent when you signed up.',
+        error: 'Please verify your email before logging in. Check your inbox for the verification code we sent when you signed up.',
       });
     }
 
@@ -371,26 +370,27 @@ exports.userSignIn = async (req, res) => {
 
 
 
-exports.verifyEmail = async (req, res) => {
+exports.verifyEmailCode = async (req, res) => {
   try {
-    const { token } = req.params;
+    const { email, code } = req.body;
 
-    if (!token) {
-      return res.status(400).json({ success: false, message: 'Invalid verification link' });
+    if (!email || !code) {
+      return res.status(400).json({ success: false, message: 'Email and code are required' });
     }
 
     const user = await User.findOne({
-      verificationToken: token,
-      verificationTokenExpires: { $gt: Date.now() },
+      email,
+      verificationCode: code,
+      verificationCodeExpires: { $gt: Date.now() },
     });
 
     if (!user) {
-      return res.status(400).json({ success: false, message: 'This verification link is invalid or has expired' });
+      return res.status(400).json({ success: false, message: 'This code is invalid or has expired' });
     }
 
     user.verified = true;
-    user.verificationToken = undefined;
-    user.verificationTokenExpires = undefined;
+    user.verificationCode = undefined;
+    user.verificationCodeExpires = undefined;
     await user.save();
 
     return res.status(200).json({
@@ -399,8 +399,53 @@ exports.verifyEmail = async (req, res) => {
       user: { name: user.name, email: user.email, id: user._id },
     });
   } catch (error) {
-    console.error('Error in verifyEmail:', error);
+    console.error('Error in verifyEmailCode:', error);
     return res.status(500).json({ success: false, message: 'Error verifying email' });
+  }
+};
+
+exports.resendVerificationCode = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'No account found for this email' });
+    }
+
+    if (user.verified) {
+      return res.status(400).json({ success: false, message: 'This account is already verified' });
+    }
+
+    const verificationCodeValue = Math.floor(100000 + Math.random() * 900000).toString();
+    user.verificationCode = verificationCodeValue;
+    user.verificationCodeExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
+    await user.save();
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    const { error: resendEmailError } = await resend.emails.send({
+      from: 'Linkpii <no-reply@linkpii.com>',
+      to: user.email,
+      subject: 'Your new Linkpii verification code',
+      text: `Your new verification code is: ${verificationCodeValue}. This code expires in 30 minutes.`,
+      html: `<p>Your new verification code is:</p><p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${verificationCodeValue}</p><p>This code expires in 30 minutes.</p>`,
+    });
+
+    if (resendEmailError) {
+      console.error('Resend error resending verification code:', resendEmailError);
+      return res.status(500).json({ success: false, message: 'Error sending verification code' });
+    }
+
+    return res.status(200).json({ success: true, message: 'A new verification code has been sent' });
+  } catch (error) {
+    console.error('Error in resendVerificationCode:', error);
+    return res.status(500).json({ success: false, message: 'Error resending verification code' });
   }
 };
 
