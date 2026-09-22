@@ -282,31 +282,42 @@ exports.createUser = async (req, res) => {
   // Generate a 6-digit email-verification code and send it via Resend
   // (same HTTP API used for password resets). Sending failures are logged
   // but never block signup - the account is already created.
+  let verificationEmailSent = false;
   try {
     const verificationCodeValue = Math.floor(100000 + Math.random() * 900000).toString();
     newUser.verificationCode = verificationCodeValue;
     newUser.verificationCodeExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
     await newUser.save();
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not set in the environment - cannot send verification email');
+    } else {
+      console.log(`Attempting to send verification code ${verificationCodeValue} to ${newUser.email} via Resend...`);
 
-    const { error: verifyEmailError } = await resend.emails.send({
-      from: 'Linkpii <no-reply@linkpii.com>',
-      to: newUser.email,
-      subject: 'Verify your Linkpii email address',
-      text: `Welcome to Linkpii! Your verification code is: ${verificationCodeValue}. This code expires in 30 minutes.`,
-      html: `<p>Welcome to Linkpii!</p><p>Your verification code is:</p><p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${verificationCodeValue}</p><p>This code expires in 30 minutes.</p>`,
-    });
+      const resend = new Resend(process.env.RESEND_API_KEY);
 
-    if (verifyEmailError) {
-      console.error('Resend error sending verification email:', verifyEmailError);
+      const { data: verifyEmailData, error: verifyEmailError } = await resend.emails.send({
+        from: 'Linkpii <no-reply@linkpii.com>',
+        to: newUser.email,
+        subject: 'Verify your Linkpii email address',
+        text: `Welcome to Linkpii! Your verification code is: ${verificationCodeValue}. This code expires in 30 minutes.`,
+        html: `<p>Welcome to Linkpii!</p><p>Your verification code is:</p><p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${verificationCodeValue}</p><p>This code expires in 30 minutes.</p>`,
+      });
+
+      if (verifyEmailError) {
+        console.error('Resend error sending verification email:', JSON.stringify(verifyEmailError));
+      } else {
+        verificationEmailSent = true;
+        console.log('Verification email accepted by Resend, id:', verifyEmailData && verifyEmailData.id);
+      }
     }
   } catch (emailError) {
-    console.error('Error sending verification email:', emailError);
+    console.error('Error sending verification email:', emailError && emailError.message, emailError && emailError.stack);
   }
 
   res.json({
     success: true,
+    verificationEmailSent,
     user: {
       name: newUser.name,
       lastname: newUser.lastname,
@@ -379,7 +390,7 @@ exports.verifyEmailCode = async (req, res) => {
     }
 
     const user = await User.findOne({
-      email,
+      email: email.toLowerCase().trim(),
       verificationCode: code,
       verificationCodeExpires: { $gt: Date.now() },
     });
@@ -412,7 +423,7 @@ exports.resendVerificationCode = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email is required' });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
 
     if (!user) {
       return res.status(400).json({ success: false, message: 'No account found for this email' });
@@ -427,9 +438,16 @@ exports.resendVerificationCode = async (req, res) => {
     user.verificationCodeExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
     await user.save();
 
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not set in the environment - cannot resend verification code');
+      return res.status(500).json({ success: false, message: 'Error sending verification code' });
+    }
+
+    console.log(`Attempting to resend verification code ${verificationCodeValue} to ${user.email} via Resend...`);
+
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    const { error: resendEmailError } = await resend.emails.send({
+    const { data: resendEmailData, error: resendEmailError } = await resend.emails.send({
       from: 'Linkpii <no-reply@linkpii.com>',
       to: user.email,
       subject: 'Your new Linkpii verification code',
@@ -438,9 +456,11 @@ exports.resendVerificationCode = async (req, res) => {
     });
 
     if (resendEmailError) {
-      console.error('Resend error resending verification code:', resendEmailError);
+      console.error('Resend error resending verification code:', JSON.stringify(resendEmailError));
       return res.status(500).json({ success: false, message: 'Error sending verification code' });
     }
+
+    console.log('Resend verification email accepted by Resend, id:', resendEmailData && resendEmailData.id);
 
     return res.status(200).json({ success: true, message: 'A new verification code has been sent' });
   } catch (error) {
