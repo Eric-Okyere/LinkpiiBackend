@@ -141,6 +141,7 @@ exports.googleSignIn = async (req, res) => {
         avatar: picture,
         picture,
         isGoogleUser: true,
+        verified: true, // Google has already confirmed this email address
       });
 
       await user.save();
@@ -347,6 +348,13 @@ exports.userSignIn = async (req, res) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ success: false, error: 'Email or password does not match!' });
+    }
+
+    if (!user.verified) {
+      return res.status(403).json({
+        success: false,
+        error: 'Please verify your email before logging in. Check your inbox for the verification link we sent when you signed up.',
+      });
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
