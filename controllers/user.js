@@ -1,8 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const verificationToken = require('../models/verificationToken');
 const { sendError, createRandomBytes } = require('../utils/helpers');
-const { generateOTP, mailTransprot } = require('../utils/mail');
 const { isValidObjectId } = require('mongoose');
 const { OAuth2Client } = require('google-auth-library');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
@@ -280,6 +278,33 @@ exports.createUser = async (req, res) => {
   // Save the new user
   await newUser.save();
 
+  // Generate an email-verification token and send the verification email via
+  // Resend (same HTTP API used for password resets). Sending failures are
+  // logged but never block signup - the account is already created.
+  try {
+    const verificationTokenValue = crypto.randomBytes(32).toString('hex');
+    newUser.verificationToken = verificationTokenValue;
+    newUser.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    await newUser.save();
+
+    const verifyUrl = `${process.env.FRONTEND_URL || 'https://linkpii.com'}/verify-email/${verificationTokenValue}`;
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    const { error: verifyEmailError } = await resend.emails.send({
+      from: 'Linkpii <no-reply@linkpii.com>',
+      to: newUser.email,
+      subject: 'Verify your Linkpii email address',
+      text: `Welcome to Linkpii! Please verify your email by clicking this link: ${verifyUrl}`,
+      html: `<p>Welcome to Linkpii! Please verify your email address by clicking the link below:</p><p><a href="${verifyUrl}">${verifyUrl}</a></p><p>This link expires in 24 hours.</p>`,
+    });
+
+    if (verifyEmailError) {
+      console.error('Resend error sending verification email:', verifyEmailError);
+    }
+  } catch (emailError) {
+    console.error('Error sending verification email:', emailError);
+  }
+
   res.json({
     success: true,
     user: {
@@ -338,45 +363,38 @@ exports.userSignIn = async (req, res) => {
 
 
 
-exports.verifyEmail = async (req, res)=>{
-const {userId, otp} = req.body
-// if(!userId) return sendError(res, "Invalid request, missing parameters!")
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
 
-if(!isValidObjectId(userId)) return sendError(res, "Invalid user id!")
+    if (!token) {
+      return res.status(400).json({ success: false, message: 'Invalid verification link' });
+    }
 
-const user = await User.findById(userId)
-if(!user) return sendError(res, "Sorry, user not found!")
+    const user = await User.findOne({
+      verificationToken: token,
+      verificationTokenExpires: { $gt: Date.now() },
+    });
 
-if(user.verified) return sendError(res, "This account is already verified!")
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'This verification link is invalid or has expired' });
+    }
 
+    user.verified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpires = undefined;
+    await user.save();
 
-const token = await verificationToken.findOne({owner: user._id})
-if(!token) return sendError(res, "Sorry user not found!")
-
-const isMatched = await token.compareToken(otp)
-if(!isMatched) return sendError(res, "Please provide a valid token!")
-
-user.verified = true;
-
-await verificationToken.findByIdAndDelete(token._id)
-await user.save()
-
-
-mailTransprot().sendMail({
-  from:"emailverification@gmail.com",
-  to: user.email,
-  subject:"verify your email account",
-  html: `<h1> Email verify successfully </h1>`
-})
-
-res.json({ 
-  success: true, 
-  message:"Your email is verified",
-  user:{ name: user.name, email: user.email, id: user._id }
-
-});
-
-}
+    return res.status(200).json({
+      success: true,
+      message: 'Your email has been verified',
+      user: { name: user.name, email: user.email, id: user._id },
+    });
+  } catch (error) {
+    console.error('Error in verifyEmail:', error);
+    return res.status(500).json({ success: false, message: 'Error verifying email' });
+  }
+};
 
 
 

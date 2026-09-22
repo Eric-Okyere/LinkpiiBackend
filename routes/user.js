@@ -52,7 +52,7 @@ validateUserSignUp,
 );
 // router.post('/auth/google', googleSignin);
 router.post('/sign-in', userSignIn);
-router.post('/verify-email', verifyEmail);
+router.post('/verify-email/:token', verifyEmail);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.put('/changepass', changePassword);
