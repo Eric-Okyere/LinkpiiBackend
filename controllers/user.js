@@ -243,7 +243,7 @@ exports.deleteUser = async (req, res) => {
 
 
 exports.createUser = async (req, res) => {
-  const { name, email, password, phone, lastname } = req.body;
+  const { name, email, password, phone, lastname, gender } = req.body;
 
   console.log("Received request:", req.body);
 
@@ -273,6 +273,7 @@ exports.createUser = async (req, res) => {
     lastname,
     email: email.toLowerCase(),
     phone,
+    gender,
     password,  // Do NOT hash here, let Mongoose middleware handle it
   });
 
@@ -323,6 +324,7 @@ exports.createUser = async (req, res) => {
       lastname: newUser.lastname,
       email: newUser.email,
       phone: newUser.phone,
+      gender: newUser.gender,
       id: newUser._id,
       verified: newUser.verified,
     },
