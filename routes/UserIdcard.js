@@ -99,13 +99,14 @@ router.put('/:id/details', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid user ID' });
     }
 
-    const { name, phone, lastname, email } = req.body;
+    const { name, phone, lastname, email, gender } = req.body;
 
     const updateData = {};
     if (name) updateData.name = name;
     if (email) updateData.email = email;
     if (lastname) updateData.lastname = lastname;
     if (phone) updateData.phone = phone;
+    if (gender) updateData.gender = gender;
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
