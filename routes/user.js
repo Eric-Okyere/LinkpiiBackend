@@ -6,6 +6,8 @@ const {
   userSignIn,
   verifyEmailCode,
   resendVerificationCode,
+  verifyLoginCode,
+  resendLoginCode,
   forgotPassword,
  getUsers,
   deleteUser,
@@ -55,6 +57,8 @@ validateUserSignUp,
 router.post('/sign-in', userSignIn);
 router.post('/verify-email-code', verifyEmailCode);
 router.post('/resend-verification-code', resendVerificationCode);
+router.post('/verify-login-code', verifyLoginCode);
+router.post('/resend-login-code', resendLoginCode);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.put('/changepass', changePassword);

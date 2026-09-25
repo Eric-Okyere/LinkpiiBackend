@@ -367,6 +367,48 @@ exports.userSignIn = async (req, res) => {
       });
     }
 
+    if (!user.signin) {
+      // This is the account's very first successful login - require an
+      // emailed code before granting access. Subsequent logins skip this.
+      try {
+        const loginCodeValue = Math.floor(100000 + Math.random() * 900000).toString();
+        user.loginVerificationCode = loginCodeValue;
+        user.loginVerificationCodeExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
+        await user.save();
+
+        if (!process.env.RESEND_API_KEY) {
+          console.error('RESEND_API_KEY is not set in the environment - cannot send login verification code');
+        } else {
+          console.log(`Attempting to send first-login code ${loginCodeValue} to ${user.email} via Resend...`);
+
+          const resend = new Resend(process.env.RESEND_API_KEY);
+
+          const { data: loginCodeData, error: loginCodeError } = await resend.emails.send({
+            from: 'Linkpii <no-reply@linkpii.com>',
+            to: user.email,
+            subject: 'Confirm your first login to Linkpii',
+            text: `For your security, please confirm this first login with the code: ${loginCodeValue}. This code expires in 30 minutes.`,
+            html: `<p>For your security, please confirm this first login to Linkpii.</p><p>Your login code is:</p><p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${loginCodeValue}</p><p>This code expires in 30 minutes.</p>`,
+          });
+
+          if (loginCodeError) {
+            console.error('Resend error sending login verification code:', JSON.stringify(loginCodeError));
+          } else {
+            console.log('Login verification email accepted by Resend, id:', loginCodeData && loginCodeData.id);
+          }
+        }
+      } catch (loginCodeSendError) {
+        console.error('Error sending login verification code:', loginCodeSendError && loginCodeSendError.message, loginCodeSendError && loginCodeSendError.stack);
+      }
+
+      return res.status(200).json({
+        success: true,
+        requiresLoginVerification: true,
+        email: user.email,
+        message: 'For your security, we sent a code to your email to confirm this first login.',
+      });
+    }
+
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ success: true, user: { id: user._id, email: user.email }, token });
 
@@ -466,6 +508,92 @@ exports.resendVerificationCode = async (req, res) => {
   } catch (error) {
     console.error('Error in resendVerificationCode:', error);
     return res.status(500).json({ success: false, message: 'Error resending verification code' });
+  }
+};
+
+exports.verifyLoginCode = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ success: false, error: 'Email and code are required' });
+    }
+
+    const user = await User.findOne({
+      email: email.toLowerCase().trim(),
+      loginVerificationCode: code,
+      loginVerificationCodeExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, error: 'This code is invalid or has expired' });
+    }
+
+    user.loginVerificationCode = undefined;
+    user.loginVerificationCodeExpires = undefined;
+    user.signin = true;
+    await user.save();
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    return res.json({ success: true, user: { id: user._id, email: user.email }, token });
+  } catch (error) {
+    console.error('Error in verifyLoginCode:', error);
+    return res.status(500).json({ success: false, error: 'Error verifying login code' });
+  }
+};
+
+exports.resendLoginCode = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+    if (!user) {
+      return res.status(400).json({ success: false, error: 'No account found for this email' });
+    }
+
+    if (user.signin) {
+      return res.status(400).json({ success: false, error: 'This account has already completed its first login' });
+    }
+
+    const loginCodeValue = Math.floor(100000 + Math.random() * 900000).toString();
+    user.loginVerificationCode = loginCodeValue;
+    user.loginVerificationCodeExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
+    await user.save();
+
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not set in the environment - cannot resend login verification code');
+      return res.status(500).json({ success: false, error: 'Error sending login code' });
+    }
+
+    console.log(`Attempting to resend first-login code ${loginCodeValue} to ${user.email} via Resend...`);
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    const { data: resendLoginData, error: resendLoginError } = await resend.emails.send({
+      from: 'Linkpii <no-reply@linkpii.com>',
+      to: user.email,
+      subject: 'Your new Linkpii login code',
+      text: `Your new login verification code is: ${loginCodeValue}. This code expires in 30 minutes.`,
+      html: `<p>Your new login verification code is:</p><p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${loginCodeValue}</p><p>This code expires in 30 minutes.</p>`,
+    });
+
+    if (resendLoginError) {
+      console.error('Resend error resending login verification code:', JSON.stringify(resendLoginError));
+      return res.status(500).json({ success: false, error: 'Error sending login code' });
+    }
+
+    console.log('Resend login verification email accepted by Resend, id:', resendLoginData && resendLoginData.id);
+
+    return res.status(200).json({ success: true, message: 'A new login code has been sent' });
+  } catch (error) {
+    console.error('Error in resendLoginCode:', error);
+    return res.status(500).json({ success: false, error: 'Error sending login code' });
   }
 };
 

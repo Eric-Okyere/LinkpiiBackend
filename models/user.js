@@ -67,6 +67,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: false,
   },
+  loginVerificationCode: {
+    type: String,
+    required: false,
+  },
+  loginVerificationCodeExpires: {
+    type: Date,
+    required: false,
+  },
   avatar:{
     type:String,
     default:""
