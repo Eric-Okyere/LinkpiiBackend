@@ -72,6 +72,7 @@ const Appointment = require("./routes/Appointment")
 const FoodCats = require("./routes/FoodCats")
 const Food = require("./routes/Food")
 const FoodComment = require("./routes/Coments/FoodComment")
+const Notifications = require("./routes/Notifications")
 
 
 
@@ -170,6 +171,7 @@ app.use('/appointment', Appointment);
 app.use('/foodcat', FoodCats);
 app.use('/food', Food);
 app.use('/foodcomment', FoodComment);
+app.use('/notifications-feed', Notifications);
 
 app.use((req, res, next) => {
   if (mongoose.connection.readyState !== 1) {

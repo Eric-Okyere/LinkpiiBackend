@@ -10,7 +10,7 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const { Car } = require('../models/Car/CarModel');
 const { Category } = require('../models/categories/categories');
-const User = require('../models/user');
+const { notifyWebUsers } = require('../utils/notifyWebUsers');
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -227,23 +227,6 @@ router.post('/', upload.fields([
 
     const savedProduct = await newProduct.save();
 
-    // Notification Logic
-    const users = await User.find({ pushToken: { $ne: null } });
-    const messages = users.map(user => ({
-      to: user.pushToken,
-      sound: 'default',
-      title: '🛍 New products on Linkpii',
-      body: `${name} is now available! Check it out.`,
-      data: { productId: savedProduct._id },
-    }));
-
-    for (let i = 0; i < messages.length; i += 100) {
-      await fetch('https://exp.host/--/api/v2/push/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(messages.slice(i, i + 100)),
-      });
-    }
     res.json(savedProduct);
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
@@ -283,7 +266,23 @@ router.put('/:id/boost', async (req, res) => {
 
 router.put('/:id/approve', async (req, res) => {
   try {
+    const existing = await Product.findById(req.params.id);
+    if (!existing) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    const wasAlreadyApproved = existing.approved;
+
     const product = await Product.findByIdAndUpdate(req.params.id, { approved: true }, { new: true });
+
+    if (!wasAlreadyApproved) {
+      notifyWebUsers({
+        title: '🛍 New product on Linkpii',
+        body: `${product.name} is now available! Check it out.`,
+        type: 'product',
+        itemId: product._id,
+      });
+    }
+
     res.json(product);
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
