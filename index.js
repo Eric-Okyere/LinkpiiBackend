@@ -73,6 +73,7 @@ const FoodCats = require("./routes/FoodCats")
 const Food = require("./routes/Food")
 const FoodComment = require("./routes/Coments/FoodComment")
 const Notifications = require("./routes/Notifications")
+const AdminMigrateWatermark = require("./routes/AdminMigrateWatermark")
 
 
 
@@ -172,6 +173,7 @@ app.use('/foodcat', FoodCats);
 app.use('/food', Food);
 app.use('/foodcomment', FoodComment);
 app.use('/notifications-feed', Notifications);
+app.use('/admin', AdminMigrateWatermark);
 
 app.use((req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
