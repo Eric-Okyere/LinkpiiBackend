@@ -5,6 +5,7 @@ const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const {Mechanics} = require("../models/Mechanics/Mechanicsmodel")
+const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 
 
 cloudinary.config({
@@ -249,16 +250,17 @@ router.put('/:id/deactivate', async (req, res) => {
 });
 
 
- router.delete("/:id",(req, res)=>{
-    Mechanics.findByIdAndRemove(req.params.id).then(user=>{
-        if(user){
-            return res.status(200).json({success:true, message:"the users is deleted successfully"})
-        } else{
-            return res.status(404).json({success: false, message: "users not found"})
-        }
-    }).catch(err=>{
-        return res.status(400).json({success: false, error: err})
-    })
+ router.delete("/:id", async (req, res) => {
+   try {
+     const mechanic = await Mechanics.findByIdAndRemove(req.params.id);
+     if (!mechanic) return res.status(404).json({ success: false, message: "users not found" });
+
+     await deleteListingAssets(mechanic, [{ field: 'picture', resourceType: 'image' }, { field: 'propicture', resourceType: 'image' }]);
+
+     return res.status(200).json({ success: true, message: "the users is deleted successfully" });
+   } catch (err) {
+     return res.status(400).json({ success: false, error: err });
+   }
  })
 
  

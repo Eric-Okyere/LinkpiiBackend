@@ -1,5 +1,6 @@
 const express = require("express");
 const { Okada } = require("../models/Okada/Okada");
+const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 const router = express.Router();
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
@@ -271,16 +272,17 @@ router.put('/:id/deactivateokada', async (req, res) => {
 
 
 
-router.delete("/:id",(req, res)=>{
-  Okada.findByIdAndRemove(req.params.id).then(user=>{
-      if(user){
-          return res.status(200).json({success:true, message:"the okada is deleted successfully"})
-      } else{
-          return res.status(404).json({success: false, message: "okada not found"})
-      }
-  }).catch(err=>{
-      return res.status(400).json({success: false, error: err})
-  })
+router.delete("/:id", async (req, res) => {
+  try {
+    const okada = await Okada.findByIdAndRemove(req.params.id);
+    if (!okada) return res.status(404).json({ success: false, message: "okada not found" });
+
+    await deleteListingAssets(okada, [{ field: 'carpic', resourceType: 'image' }, { field: 'driverpic', resourceType: 'image' }]);
+
+    return res.status(200).json({ success: true, message: "the okada is deleted successfully" });
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err });
+  }
 })
 
 

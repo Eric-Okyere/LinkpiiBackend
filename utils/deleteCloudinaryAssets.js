@@ -21,18 +21,26 @@ async function destroyIfCloudinaryAsset(url, resourceType) {
   }
 }
 
-// Deletes the picture / picturesec / video assets belonging to a listing
-// document from Cloudinary. Safe to call with any document shape - fields
-// that are missing or aren't Cloudinary URLs are silently skipped, and any
-// Cloudinary error is caught and logged rather than thrown, so this never
-// blocks the caller's own delete response.
-async function deleteListingAssets(doc) {
+// Default field shape used by most listing schemas (picture, picturesec, video).
+const DEFAULT_FIELDS = [
+  { field: "picture", resourceType: "image" },
+  { field: "picturesec", resourceType: "image" },
+  { field: "video", resourceType: "video" },
+];
+
+// Deletes a listing document's uploaded media from Cloudinary. `fields` lets
+// callers describe their own schema's upload fields (e.g. Cars use carpic /
+// driverpic instead of picture / picturesec) - it defaults to the common
+// picture / picturesec / video shape used by most listing types. Safe to
+// call with any document shape: fields that are missing, blank, or aren't
+// Cloudinary URLs are silently skipped, and any Cloudinary error is caught
+// and logged per-asset so a failed cleanup never blocks the caller's own
+// delete response.
+async function deleteListingAssets(doc, fields = DEFAULT_FIELDS) {
   if (!doc) return;
-  await Promise.all([
-    destroyIfCloudinaryAsset(doc.picture, "image"),
-    destroyIfCloudinaryAsset(doc.picturesec, "image"),
-    destroyIfCloudinaryAsset(doc.video, "video"),
-  ]);
+  await Promise.all(
+    fields.map(({ field, resourceType }) => destroyIfCloudinaryAsset(doc[field], resourceType))
+  );
 }
 
 module.exports = { deleteListingAssets, destroyIfCloudinaryAsset, extractPublicId };

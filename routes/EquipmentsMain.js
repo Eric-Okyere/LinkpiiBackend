@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {Equipmentmain} = require('../models/products/Equipments')
+const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
@@ -476,16 +477,17 @@ router.put("/:id/hot", async (req, res) => {
   }
 });
 
- router.delete("/:id",(req, res)=>{
-    Equipmentmain.findByIdAndRemove(req.params.id).then(product=>{
-        if(product){
-            return res.status(200).json({success:true, message:"the product is deleted successfully"})
-        } else{
-            return res.status(404).json({success: false, message: "product not found"})
-        }
-    }).catch(err=>{
-        return res.status(400).json({success: false, error: err})
-    })
+ router.delete("/:id", async (req, res) => {
+   try {
+     const product = await Equipmentmain.findByIdAndRemove(req.params.id);
+     if (!product) return res.status(404).json({ success: false, message: "product not found" });
+
+     await deleteListingAssets(product, [{ field: 'picture', resourceType: 'image' }, { field: 'picturesec', resourceType: 'image' }]);
+
+     return res.status(200).json({ success: true, message: "the product is deleted successfully" });
+   } catch (err) {
+     return res.status(400).json({ success: false, error: err });
+   }
  })
 
  

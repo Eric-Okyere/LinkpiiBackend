@@ -6,6 +6,7 @@ require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { Buildingcat } = require('../models/categories/buildingCats');
 const { Buildings } = require('../models/Building/building');
+const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 const User = require('../models/user');
 
 
@@ -476,16 +477,17 @@ router.put('/:id/deactivate', async (req, res) => {
   }
 });
 
- router.delete("/:id",(req, res)=>{
-    Buildings.findByIdAndRemove(req.params.id).then(product=>{
-        if(product){
-            return res.status(200).json({success:true, message:"the product is deleted successfully"})
-        } else{
-            return res.status(404).json({success: false, message: "product not found"})
-        }
-    }).catch(err=>{
-        return res.status(400).json({success: false, error: err})
-    })
+ router.delete("/:id", async (req, res) => {
+   try {
+     const product = await Buildings.findByIdAndRemove(req.params.id);
+     if (!product) return res.status(404).json({ success: false, message: "product not found" });
+
+     await deleteListingAssets(product);
+
+     return res.status(200).json({ success: true, message: "the product is deleted successfully" });
+   } catch (err) {
+     return res.status(400).json({ success: false, error: err });
+   }
  })
 
 
