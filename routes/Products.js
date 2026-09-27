@@ -7,6 +7,7 @@ require("dotenv/config");
 
 // THE FIX: Destructure CloudinaryStorage from the package
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
 
 const { Car } = require('../models/Car/CarModel');
 const { Category } = require('../models/categories/categories');
@@ -37,7 +38,8 @@ const storage = new CloudinaryStorage({
           { video_codec: 'h264' },
           { bit_rate: '1500k' },
           { audio_codec: 'aac' },
-          { duration: "10.0" }
+          { duration: "10.0" },
+          WATERMARK_TRANSFORMATION
         ]
       };
     }
@@ -48,7 +50,8 @@ const storage = new CloudinaryStorage({
       resource_type: 'image',
       transformation: [
         { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
-        { quality: 'auto:eco', fetch_format: 'auto' }
+        { quality: 'auto:eco', fetch_format: 'auto' },
+        WATERMARK_TRANSFORMATION
       ]
     };
   },

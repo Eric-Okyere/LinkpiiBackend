@@ -3,6 +3,7 @@ const { Okada } = require("../models/Okada/Okada");
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 const router = express.Router();
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
 const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 
@@ -21,7 +22,8 @@ const storage = new CloudinaryStorage({
     format: 'jpg', 
     transformation: [
       { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, 
-      { quality: 'auto:eco', fetch_format: 'auto' } 
+      { quality: 'auto:eco', fetch_format: 'auto' }, 
+      WATERMARK_TRANSFORMATION
     ]
   },
 });

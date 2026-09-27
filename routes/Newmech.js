@@ -6,6 +6,7 @@ const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
 // const { Products } = require('../models/categories/fashion');
 
 
@@ -25,7 +26,8 @@ const storage = new CloudinaryStorage({
       format: 'jpg', // Specify the format of the uploaded file
       transformation: [
         { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, // Resize and crop the image
-        { quality: 'auto:eco', fetch_format: 'auto' } // Optimize image quality and format
+        { quality: 'auto:eco', fetch_format: 'auto' }, // Optimize image quality and format
+        WATERMARK_TRANSFORMATION
       ]
     },
   });

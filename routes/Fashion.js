@@ -6,6 +6,7 @@ const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
 const { Products } = require('../models/categories/fashion');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const User = require('../models/user');
@@ -34,7 +35,8 @@ const storage = new CloudinaryStorage({
         transformation: [
           { width: 640, height: 360, crop: 'limit' }, // Standard widescreen limit
           { quality: 'auto' }, 
-          { duration: "15.0" } // Increased slightly for better product viewing
+          { duration: "15.0" }, // Increased slightly for better product viewing
+          WATERMARK_TRANSFORMATION
         ]
       };
     }
@@ -47,7 +49,8 @@ const storage = new CloudinaryStorage({
         // 'limit' ensures the image is never larger than 1000px 
         // but keeps its original shape (no cropping)
         { width: 1000, height: 1000, crop: 'limit' }, 
-        { quality: 'auto:good', fetch_format: 'auto' }
+        { quality: 'auto:good', fetch_format: 'auto' },
+        WATERMARK_TRANSFORMATION
       ]
     };
   },

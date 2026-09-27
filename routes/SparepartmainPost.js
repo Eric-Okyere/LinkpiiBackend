@@ -6,6 +6,7 @@ const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
 
 
 
@@ -33,7 +34,8 @@ const storage = new CloudinaryStorage({
           { video_codec: 'h264' }, // Use H.264 codec for better compression
           { bit_rate: '1500k' }, // Limit the bitrate to 500 kbps
           { audio_codec: 'aac', audio_frequency: 48000 }, // Compress audio as well
-          { duration: "10.0" }
+          { duration: "10.0" },
+          WATERMARK_TRANSFORMATION
         ]
       };
     }
@@ -44,7 +46,8 @@ const storage = new CloudinaryStorage({
       format: 'jpg',
       transformation: [
         { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
-        { quality: 'auto:eco', fetch_format: 'auto' }
+        { quality: 'auto:eco', fetch_format: 'auto' },
+        WATERMARK_TRANSFORMATION
       ]
     };
   },

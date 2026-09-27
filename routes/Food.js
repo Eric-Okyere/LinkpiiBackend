@@ -6,6 +6,7 @@ const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const User = require('../models/user');
 
@@ -35,7 +36,8 @@ const storage = new CloudinaryStorage({
           { video_codec: 'h264' }, 
           { bit_rate: '1500k' }, 
           { audio_codec: 'aac', audio_frequency: 48000 }, 
-          { duration: "10.0" }
+          { duration: "10.0" },
+          WATERMARK_TRANSFORMATION
         ]
       };
     }
@@ -45,7 +47,8 @@ const storage = new CloudinaryStorage({
       format: 'jpg',
       transformation: [
         { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
-        { quality: 'auto:eco', fetch_format: 'auto' }
+        { quality: 'auto:eco', fetch_format: 'auto' },
+        WATERMARK_TRANSFORMATION
       ]
     };
   },

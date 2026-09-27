@@ -3,6 +3,7 @@ const { Car } = require("../models/Car/CarModel");
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 const router = express.Router();
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
 const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 
@@ -21,7 +22,8 @@ const storage = new CloudinaryStorage({
     format: 'jpg', // Specify the format of the uploaded file
     transformation: [
       { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, // Resize and crop the image
-      { quality: 'auto:eco', fetch_format: 'auto' } // Optimize image quality and format
+      { quality: 'auto:eco', fetch_format: 'auto' }, // Optimize image quality and format
+      WATERMARK_TRANSFORMATION
     ]
   },
 });
