@@ -365,6 +365,8 @@ exports.userSignIn = async (req, res) => {
     if (!user.verified) {
       return res.status(403).json({
         success: false,
+        requiresEmailVerification: true,
+        email: user.email,
         error: 'Please verify your email before logging in. Check your inbox for the verification code we sent when you signed up.',
       });
     }
