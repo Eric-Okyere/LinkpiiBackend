@@ -11,6 +11,7 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { Car } = require('../models/Car/CarModel');
 const { Category } = require('../models/categories/categories');
 const { notifyWebUsers } = require('../utils/notifyWebUsers');
+const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -313,13 +314,17 @@ router.put("/:id/hot", async (req, res) => {
 /* DELETE ROUTES                               */
 /* -------------------------------------------------------------------------- */
 
-router.delete("/:id", (req, res) => {
-  Product.findByIdAndDelete(req.params.id).then(user => {
-    if (user) return res.status(200).json({ success: true, message: "deleted successfully" });
-    return res.status(404).json({ success: false, message: "not found" });
-  }).catch(err => {
+router.delete("/:id", async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) return res.status(404).json({ success: false, message: "not found" });
+
+    await deleteListingAssets(product);
+
+    return res.status(200).json({ success: true, message: "deleted successfully" });
+  } catch (err) {
     return res.status(400).json({ success: false, error: err });
-  });
+  }
 });
 
 module.exports = router;
