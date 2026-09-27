@@ -7,7 +7,7 @@ require("dotenv/config");
 
 // THE FIX: Destructure CloudinaryStorage from the package
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
+const { withWatermark } = require('../utils/watermarkOverlay');
 
 const { Car } = require('../models/Car/CarModel');
 const { Category } = require('../models/categories/categories');
@@ -38,8 +38,7 @@ const storage = new CloudinaryStorage({
           { video_codec: 'h264' },
           { bit_rate: '1500k' },
           { audio_codec: 'aac' },
-          { duration: "10.0" },
-          WATERMARK_TRANSFORMATION
+          { duration: "10.0" }
         ]
       };
     }
@@ -50,8 +49,7 @@ const storage = new CloudinaryStorage({
       resource_type: 'image',
       transformation: [
         { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
-        { quality: 'auto:eco', fetch_format: 'auto' },
-        WATERMARK_TRANSFORMATION
+        { quality: 'auto:eco', fetch_format: 'auto' }
       ]
     };
   },
@@ -220,9 +218,9 @@ router.post('/', upload.fields([
 ]), async (req, res) => {
   try {
     const { name, phone, price, whatsapp, description, location, region, town, category } = req.body;
-    const picture = req.files['picture'] ? req.files['picture'][0].path : null;
-    const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
-    const video = req.files['video'] ? req.files['video'][0].path : null;
+    const picture = req.files['picture'] ? withWatermark(req.files['picture'][0].path) : null;
+    const picturesec = req.files['picturesec'] ? withWatermark(req.files['picturesec'][0].path) : null;
+    const video = req.files['video'] ? withWatermark(req.files['video'][0].path) : null;
 
     const newProduct = new Product({
       name, phone, whatsapp, description, price, location, region, town, category,
@@ -247,9 +245,9 @@ router.put('/:id', upload.fields([
     if (!shopItem) return res.status(404).json({ error: 'Shop item not found' });
 
     Object.assign(shopItem, req.body);
-    if (req.files['picture']) shopItem.picture = req.files['picture'][0].path;
-    if (req.files['picturesec']) shopItem.picturesec = req.files['picturesec'][0].path;
-    if (req.files['video']) shopItem.video = req.files['video'][0].path;
+    if (req.files['picture']) shopItem.picture = withWatermark(req.files['picture'][0].path);
+    if (req.files['picturesec']) shopItem.picturesec = withWatermark(req.files['picturesec'][0].path);
+    if (req.files['video']) shopItem.video = withWatermark(req.files['video'][0].path);
 
     const updatedShopItem = await shopItem.save();
     res.json(updatedShopItem);

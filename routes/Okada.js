@@ -3,7 +3,7 @@ const { Okada } = require("../models/Okada/Okada");
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 const router = express.Router();
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
+const { withWatermark } = require('../utils/watermarkOverlay');
 const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 
@@ -22,8 +22,7 @@ const storage = new CloudinaryStorage({
     format: 'jpg', 
     transformation: [
       { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, 
-      { quality: 'auto:eco', fetch_format: 'auto' }, 
-      WATERMARK_TRANSFORMATION
+      { quality: 'auto:eco', fetch_format: 'auto' } 
     ]
   },
 });
@@ -152,10 +151,10 @@ router.post('/', upload.fields([
     const { name, location, carnum, region, town, phone, card,whatsapp,} = req.body;
 
     // Check if picture is present in the request
-    // const carpic = req.files['carpic'][0].path;
-    // const driverpic = req.files['driverpic'][0].path;
-    const carpic = req.files['carpic'] ? req.files['carpic'][0].path : null;
-    const driverpic = req.files['driverpic'] ? req.files['driverpic'][0].path : null;
+    // const carpic = withWatermark(req.files['carpic'][0].path);
+    // const driverpic = withWatermark(req.files['driverpic'][0].path);
+    const carpic = req.files['carpic'] ? withWatermark(req.files['carpic'][0].path) : null;
+    const driverpic = req.files['driverpic'] ? withWatermark(req.files['driverpic'][0].path) : null;
 
 
 
@@ -201,10 +200,10 @@ router.put('/:id', upload.fields([
     const carId = req.params.id;
 
     // Check if pictures are present in the request
-    // const carpic = req.files['carpic'][0].path;
-    // const driverpic = req.files['driverpic'][0].path;
-    const carpic = req.files['carpic'] ? req.files['carpic'][0].path : null;
-    const driverpic = req.files['driverpic'] ? req.files['driverpic'][0].path : null;
+    // const carpic = withWatermark(req.files['carpic'][0].path);
+    // const driverpic = withWatermark(req.files['driverpic'][0].path);
+    const carpic = req.files['carpic'] ? withWatermark(req.files['carpic'][0].path) : null;
+    const driverpic = req.files['driverpic'] ? withWatermark(req.files['driverpic'][0].path) : null;
 
 
     // Upload images to Cloudinary

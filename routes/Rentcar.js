@@ -6,7 +6,7 @@ const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
+const { withWatermark } = require('../utils/watermarkOverlay');
 
 
 
@@ -26,8 +26,7 @@ const storage = new CloudinaryStorage({
       format: 'jpg', // Specify the format of the uploaded file
       transformation: [
         { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, // Resize and crop the image
-        { quality: 'auto:eco', fetch_format: 'auto' }, // Optimize image quality and format
-        WATERMARK_TRANSFORMATION
+        { quality: 'auto:eco', fetch_format: 'auto' } // Optimize image quality and format
       ]
     },
   });
@@ -193,8 +192,8 @@ router.post('/', upload.fields([
         category} = req.body;
   
       // Check if picture is present in the request
-      const picture = req.files['picture'] ? req.files['picture'][0].path : null;
-      const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
+      const picture = req.files['picture'] ? withWatermark(req.files['picture'][0].path) : null;
+      const picturesec = req.files['picturesec'] ? withWatermark(req.files['picturesec'][0].path) : null;
   
   
   
@@ -244,8 +243,8 @@ router.post('/', upload.fields([
       const carId = req.params.id;
   
       // Check if pictures are present in the request
-      const picture = req.files['picture'] ? req.files['picture'][0].path : null;
-      const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
+      const picture = req.files['picture'] ? withWatermark(req.files['picture'][0].path) : null;
+      const picturesec = req.files['picturesec'] ? withWatermark(req.files['picturesec'][0].path) : null;
   
       if (!picture || !picturesec) {
         return res.status(400).json({ error: 'Please upload both pictures' });

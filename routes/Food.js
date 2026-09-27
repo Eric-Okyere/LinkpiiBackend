@@ -6,7 +6,7 @@ const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
+const { withWatermark } = require('../utils/watermarkOverlay');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const User = require('../models/user');
 
@@ -36,8 +36,7 @@ const storage = new CloudinaryStorage({
           { video_codec: 'h264' }, 
           { bit_rate: '1500k' }, 
           { audio_codec: 'aac', audio_frequency: 48000 }, 
-          { duration: "10.0" },
-          WATERMARK_TRANSFORMATION
+          { duration: "10.0" }
         ]
       };
     }
@@ -47,8 +46,7 @@ const storage = new CloudinaryStorage({
       format: 'jpg',
       transformation: [
         { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
-        { quality: 'auto:eco', fetch_format: 'auto' },
-        WATERMARK_TRANSFORMATION
+        { quality: 'auto:eco', fetch_format: 'auto' }
       ]
     };
   },
@@ -284,9 +282,9 @@ const latitude = parseFloat(req.body.latitude);
 const longitude = parseFloat(req.body.longitude);
 
 
-    const picture = req.files['picture']?.[0]?.path || null;
-    const picturesec = req.files['picturesec']?.[0]?.path || null;
-    const video = req.files['video']?.[0]?.path || null;
+    const picture = withWatermark(req.files['picture']?.[0]?.path) || null;
+    const picturesec = withWatermark(req.files['picturesec']?.[0]?.path) || null;
+    const video = withWatermark(req.files['video']?.[0]?.path) || null;
 
     const newProduct = new Food({
       name,
@@ -356,15 +354,15 @@ router.put('/:id', upload.fields([
     const updateData = { ...req.body };
 
     if (req.files.picture) {
-      updateData.picture = req.files.picture[0].path;
+      updateData.picture = withWatermark(req.files.picture[0].path);
     }
 
     if (req.files.picturesec) {
-      updateData.picturesec = req.files.picturesec[0].path;
+      updateData.picturesec = withWatermark(req.files.picturesec[0].path);
     }
 
     if (req.files.video) {
-      updateData.video = req.files.video[0].path;
+      updateData.video = withWatermark(req.files.video[0].path);
     }
 
     const updated = await Food.findByIdAndUpdate(req.params.id, updateData, { new: true });

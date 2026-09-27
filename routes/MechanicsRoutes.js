@@ -4,7 +4,7 @@ const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
+const { withWatermark } = require('../utils/watermarkOverlay');
 const {Mechanics} = require("../models/Mechanics/Mechanicsmodel")
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 
@@ -23,8 +23,7 @@ cloudinary.config({
       format: 'jpg', // Specify the format of the uploaded file
       transformation: [
         { width: 500, height: 500, crop: 'fill', gravity: 'auto' }, // Resize and crop the image
-        { quality: 'auto:eco', fetch_format: 'auto' }, // Optimize image quality and format
-        WATERMARK_TRANSFORMATION
+        { quality: 'auto:eco', fetch_format: 'auto' } // Optimize image quality and format
       ]
     },
   });
@@ -102,8 +101,8 @@ router.post('/', upload.fields([
       const { name, location, services, region, town, phone,whatsapp,card, fullname, category} = req.body;
   
       // Check if picture is present in the request
-      const picture = req.files['picture'][0].path;
-      const propicture = req.files['propicture'][0].path;
+      const picture = withWatermark(req.files['picture'][0].path);
+      const propicture = withWatermark(req.files['propicture'][0].path);
       
   
   
@@ -179,9 +178,9 @@ router.post('/', upload.fields([
       const carId = req.params.id;
   
       // Check if pictures are present in the request
-      const picture = req.files['picture'][0].path;
-      const propicture = req.files['propicture'][0].path;
-      // const servpic = req.files['servpic'][0].path;
+      const picture = withWatermark(req.files['picture'][0].path);
+      const propicture = withWatermark(req.files['propicture'][0].path);
+      // const servpic = withWatermark(req.files['servpic'][0].path);
   
       // Upload images to Cloudinary
       const cloudinaryResult = await cloudinary.uploader.upload(picture);

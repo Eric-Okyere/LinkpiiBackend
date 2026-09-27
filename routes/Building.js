@@ -4,7 +4,7 @@ const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
+const { withWatermark } = require('../utils/watermarkOverlay');
 const { Buildingcat } = require('../models/categories/buildingCats');
 const { Buildings } = require('../models/Building/building');
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
@@ -35,8 +35,7 @@ const storage = new CloudinaryStorage({
           { video_codec: 'h264' }, // Use H.264 codec for better compression
           { bit_rate: '1500k' }, // Limit the bitrate to 500 kbps
           { audio_codec: 'aac', audio_frequency: 48000 }, // Compress audio as well
-          { duration: "10.0" },
-          WATERMARK_TRANSFORMATION
+          { duration: "10.0" }
         ]
       };
     }
@@ -47,8 +46,7 @@ const storage = new CloudinaryStorage({
       format: 'jpg',
       transformation: [
         { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
-        { quality: 'auto:eco', fetch_format: 'auto' },
-        WATERMARK_TRANSFORMATION
+        { quality: 'auto:eco', fetch_format: 'auto' }
       ]
     };
   },
@@ -307,9 +305,9 @@ router.post('/', upload.fields([
     const { name, phone,price, whatsapp,priceunit,amenities, description, location, region, town, category } = req.body;
 
     // Check if files are present in the request
-    const picture = req.files['picture'] ? req.files['picture'][0].path : null;
-    const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
-    const video = req.files['video'] ? req.files['video'][0].path : null;
+    const picture = req.files['picture'] ? withWatermark(req.files['picture'][0].path) : null;
+    const picturesec = req.files['picturesec'] ? withWatermark(req.files['picturesec'][0].path) : null;
+    const video = req.files['video'] ? withWatermark(req.files['video'][0].path) : null;
 
     // Create a new product instance
     const newProduct = new Buildings({
@@ -382,9 +380,9 @@ router.post('/', upload.fields([
       const carId = req.params.id;
   
       // Check if pictures are present in the request
-      const picture = req.files['picture'] ? req.files['picture'][0].path : null;
-      const picturesec = req.files['picturesec'] ? req.files['picturesec'][0].path : null;
-      const video = req.files['video'] ? req.files['video'][0].path : null;
+      const picture = req.files['picture'] ? withWatermark(req.files['picture'][0].path) : null;
+      const picturesec = req.files['picturesec'] ? withWatermark(req.files['picturesec'][0].path) : null;
+      const video = req.files['video'] ? withWatermark(req.files['video'][0].path) : null;
       if (!picture || !picturesec) {
         return res.status(400).json({ error: 'Please upload both pictures' });
       }

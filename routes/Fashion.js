@@ -6,7 +6,7 @@ const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { WATERMARK_TRANSFORMATION } = require('../utils/watermarkOverlay');
+const { withWatermark } = require('../utils/watermarkOverlay');
 const { Products } = require('../models/categories/fashion');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const User = require('../models/user');
@@ -35,8 +35,7 @@ const storage = new CloudinaryStorage({
         transformation: [
           { width: 640, height: 360, crop: 'limit' }, // Standard widescreen limit
           { quality: 'auto' }, 
-          { duration: "15.0" }, // Increased slightly for better product viewing
-          WATERMARK_TRANSFORMATION
+          { duration: "15.0" } // Increased slightly for better product viewing
         ]
       };
     }
@@ -49,8 +48,7 @@ const storage = new CloudinaryStorage({
         // 'limit' ensures the image is never larger than 1000px 
         // but keeps its original shape (no cropping)
         { width: 1000, height: 1000, crop: 'limit' }, 
-        { quality: 'auto:good', fetch_format: 'auto' },
-        WATERMARK_TRANSFORMATION
+        { quality: 'auto:good', fetch_format: 'auto' }
       ]
     };
   },
@@ -308,9 +306,9 @@ router.post('/', upload.fields([
       condition, discount, userId
     } = req.body;
 
-    const picture = req.files['picture']?.[0]?.path || null;
-    const picturesec = req.files['picturesec']?.[0]?.path || null;
-    const video = req.files['video']?.[0]?.path || null;
+    const picture = withWatermark(req.files['picture']?.[0]?.path) || null;
+    const picturesec = withWatermark(req.files['picturesec']?.[0]?.path) || null;
+    const video = withWatermark(req.files['video']?.[0]?.path) || null;
 
     const newProduct = new Product({
       name,
@@ -416,13 +414,13 @@ router.post('/', upload.fields([
   
         // Check and update files if new ones are uploaded
         if (req.files['picture']) {
-          product.picture = req.files['picture'][0].path;
+          product.picture = withWatermark(req.files['picture'][0].path);
         }
         if (req.files['picturesec']) {
-          product.picturesec = req.files['picturesec'][0].path;
+          product.picturesec = withWatermark(req.files['picturesec'][0].path);
         }
         if (req.files['video']) {
-          product.video = req.files['video'][0].path;
+          product.video = withWatermark(req.files['video'][0].path);
         }
   
         // Save the updated product to the database
