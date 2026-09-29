@@ -105,6 +105,7 @@ const EmployeeSchema = mongoose.Schema({
     ref: 'Comment'
   }],
  
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
 });
 
 EmployeeSchema.set('toJSON', {

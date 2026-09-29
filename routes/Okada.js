@@ -2,6 +2,7 @@ const express = require("express");
 const { Okada } = require("../models/Okada/Okada");
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 const router = express.Router();
+const { toggleLike, getLikeStatus } = require('../controllers/Likes');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { withWatermark } = require('../utils/watermarkOverlay');
 const multer = require('multer');
@@ -285,6 +286,12 @@ router.delete("/:id", async (req, res) => {
     return res.status(400).json({ success: false, error: err });
   }
 })
+
+// Save / unsave ("like") this listing for a buyer - toggled from their
+// side, not a public counter. See controllers/Likes.js.
+router.post('/:id/like', toggleLike(Okada));
+router.get('/:id/like', getLikeStatus(Okada));
+
 
 
 

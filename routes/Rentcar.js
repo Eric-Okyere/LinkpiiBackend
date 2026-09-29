@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { toggleLike, getLikeStatus } = require('../controllers/Likes');
 const {Product} = require('../models/Car/RentCars')
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 const multer = require('multer');
@@ -350,6 +351,12 @@ router.put('/:id/deactivate', async (req, res) => {
      return res.status(400).json({ success: false, error: err });
    }
  })
+
+// Save / unsave ("like") this listing for a buyer - toggled from their
+// side, not a public counter. See controllers/Likes.js.
+router.post('/:id/like', toggleLike(Product));
+router.get('/:id/like', getLikeStatus(Product));
+
 
  
 

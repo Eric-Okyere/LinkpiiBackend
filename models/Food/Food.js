@@ -98,7 +98,8 @@ longitude: {
   comments: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Foodcomment'
-  }]
+  }],
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
 });
 
 FoodSchema.set('toJSON', {

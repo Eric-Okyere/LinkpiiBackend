@@ -71,8 +71,9 @@ const MechanicsSchema = mongoose.Schema({
   comments: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment'
-  }]
+  }],
 
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
 });
 
 MechanicsSchema.set('toJSON', {

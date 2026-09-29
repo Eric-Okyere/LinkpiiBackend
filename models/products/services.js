@@ -76,8 +76,9 @@ const EmployeeSchema = mongoose.Schema({
     default: 0, 
     min: 0,
     max: 5
-  }
+  },
 
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
 });
 
 EmployeeSchema.set('toJSON', {

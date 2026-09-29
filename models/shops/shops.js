@@ -78,7 +78,8 @@ const ShopSchema = mongoose.Schema({
   viewers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Shopviewers'
-  }]
+  }],
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
 });
 
 ShopSchema.set('toJSON', {

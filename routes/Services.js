@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { toggleLike, getLikeStatus } = require('../controllers/Likes');
 const multer = require('multer');
 const cloudinary = require("cloudinary").v2
 require("dotenv/config")
@@ -443,6 +444,12 @@ router.get("/:id/rating", async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 });
+
+// Save / unsave ("like") this listing for a buyer - toggled from their
+// side, not a public counter. See controllers/Likes.js.
+router.post('/:id/like', toggleLike(Services));
+router.get('/:id/like', getLikeStatus(Services));
+
 
  
 
