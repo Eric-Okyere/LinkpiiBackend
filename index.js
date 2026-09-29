@@ -75,6 +75,7 @@ const FoodComment = require("./routes/Coments/FoodComment")
 const Notifications = require("./routes/Notifications")
 const Saved = require("./routes/Saved")
 const PushSubscriptions = require("./routes/PushSubscriptions")
+const AdminPushDiagnostics = require("./routes/AdminPushDiagnostics")
 
 
 
@@ -176,6 +177,7 @@ app.use('/foodcomment', FoodComment);
 app.use('/notifications-feed', Notifications);
 app.use('/saved', Saved);
 app.use('/push', PushSubscriptions);
+app.use('/admin', AdminPushDiagnostics);
 
 app.use((req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
