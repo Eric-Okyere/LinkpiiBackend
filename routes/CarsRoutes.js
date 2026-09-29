@@ -2,6 +2,7 @@ const express = require("express");
 const { Car } = require("../models/Car/CarModel");
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 const router = express.Router();
+const { notifyWebUsers } = require('../utils/notifyWebUsers');
 const { toggleLike, getLikeStatus } = require('../controllers/Likes');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { withWatermark } = require('../utils/watermarkOverlay');
@@ -216,10 +217,21 @@ router.put('/:id/approvecar', async (req, res) => {
   const productId = req.params.id;
 
   try {
+    const existing = await Car.findById(productId);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+    const wasAlreadyApproved = existing.approved;
+
     const product = await Car.findByIdAndUpdate(productId, { approved: true }, { new: true });
 
-    if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+    if (!wasAlreadyApproved) {
+      notifyWebUsers({
+        title: '🚗 New driver on Linkpii',
+        body: `${product.name} is now available! Check it out.`,
+        type: 'cars',
+        itemId: product._id,
+      });
     }
 
     res.json(product);

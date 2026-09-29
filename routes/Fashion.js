@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { notifyWebUsers } = require('../utils/notifyWebUsers');
 const { toggleLike, getLikeStatus } = require('../controllers/Likes');
 const {Product} = require('../models/products/Fashion')
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
@@ -446,10 +447,21 @@ router.put('/:id/approve', async (req, res) => {
   const productId = req.params.id;
 
   try {
+    const existing = await Product.findById(productId);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+    const wasAlreadyApproved = existing.approved;
+
     const product = await Product.findByIdAndUpdate(productId, { approved: true }, { new: true });
 
-    if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+    if (!wasAlreadyApproved) {
+      notifyWebUsers({
+        title: '👗 New fashion item on Linkpii',
+        body: `${product.name} is now available! Check it out.`,
+        type: 'fashionpost',
+        itemId: product._id,
+      });
     }
 
     res.json(product);

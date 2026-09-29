@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { notifyWebUsers } = require('../utils/notifyWebUsers');
 const { toggleLike, getLikeStatus } = require('../controllers/Likes');
 const multer = require('multer');
 const cloudinary = require("cloudinary").v2
@@ -221,10 +222,21 @@ router.put('/:id/approve', async (req, res) => {
   const productId = req.params.id;
 
   try {
+    const existing = await Mechanics.findById(productId);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+    const wasAlreadyApproved = existing.approved;
+
     const product = await Mechanics.findByIdAndUpdate(productId, { approved: true }, { new: true });
 
-    if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+    if (!wasAlreadyApproved) {
+      notifyWebUsers({
+        title: '🔧 New mechanic on Linkpii',
+        body: `${product.name} is now available! Check it out.`,
+        type: 'mechanics',
+        itemId: product._id,
+      });
     }
 
     res.json(product);
