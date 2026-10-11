@@ -89,8 +89,10 @@ async function postAutoComment(ListingModel, listingId, CommentModel = Comment) 
       content: randomFrom(AUTO_COMMENT_PHRASES),
     });
     await ListingModel.findByIdAndUpdate(listingId, { $push: { comments: comment._id } });
+    return { success: true };
   } catch (error) {
     console.error("Error posting auto comment:", error);
+    return { success: false, error: error.message };
   }
 }
 

@@ -63,13 +63,26 @@ router.get("/backfill-auto-comments", async (req, res) => {
       };
       const targets = await Model.find(query, { _id: 1 });
 
+      let commented = 0;
+      const sampleErrors = [];
+
       if (shouldRun) {
         for (const doc of targets) {
-          await postAutoComment(Model, doc._id, CommentModel);
+          const outcome = await postAutoComment(Model, doc._id, CommentModel);
+          if (outcome && outcome.success) {
+            commented++;
+          } else if (sampleErrors.length < 3) {
+            sampleErrors.push({ id: doc._id.toString(), error: (outcome && outcome.error) || "unknown error" });
+          }
         }
       }
 
-      results.push({ category: label, eligible: targets.length, commented: shouldRun ? targets.length : 0 });
+      results.push({
+        category: label,
+        eligible: targets.length,
+        commented,
+        ...(sampleErrors.length ? { sampleErrors } : {}),
+      });
     } catch (error) {
       results.push({ category: label, error: error.message });
     }
