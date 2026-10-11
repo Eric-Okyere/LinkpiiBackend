@@ -37,6 +37,10 @@ region:{
     type:String,
     required:true
 }, 
+town:{
+    type:String,
+    default:""
+},
 location:{
     type:String,
     required:true
@@ -48,6 +52,10 @@ deslocation:{
 desregion:{
     type:String,
     required:true
+},
+destown:{
+    type:String,
+    default:""
 },
 userlocation: {
     latitude: { type: Number },
