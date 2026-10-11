@@ -56,6 +56,15 @@ const userSchema = new mongoose.Schema({
     default: false,
     
   },
+  // Set at signup (web) when the user checks "I agree to the Terms
+  // and Conditions"; also set on first Google sign-in once the
+  // frontend has shown that checkbox. Soft field only - never blocks
+  // signup server-side, since this endpoint is shared with the mobile
+  // app, which doesn't send it yet.
+  termsAccepted: {
+    type: Boolean,
+    default: false,
+  },
   resetPasswordToken: {
     type: String,
     required: false,

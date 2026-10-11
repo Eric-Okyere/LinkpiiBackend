@@ -96,7 +96,7 @@ cloudinary.config({
 
 
 exports.googleSignIn = async (req, res) => {
-  const { token } = req.body;
+  const { token, agreeToTerms } = req.body;
 
   try {
     if (!token) {
@@ -142,6 +142,7 @@ exports.googleSignIn = async (req, res) => {
         picture,
         isGoogleUser: true,
         verified: true, // Google has already confirmed this email address
+        termsAccepted: Boolean(agreeToTerms),
       });
 
       await user.save();
@@ -243,7 +244,7 @@ exports.deleteUser = async (req, res) => {
 
 
 exports.createUser = async (req, res) => {
-  const { name, email, password, phone, lastname, gender } = req.body;
+  const { name, email, password, phone, lastname, gender, agreeToTerms } = req.body;
 
   console.log("Received request:", req.body);
 
@@ -275,6 +276,7 @@ exports.createUser = async (req, res) => {
     phone,
     gender,
     password,  // Do NOT hash here, let Mongoose middleware handle it
+    termsAccepted: Boolean(agreeToTerms),
   });
 
   // Save the new user
