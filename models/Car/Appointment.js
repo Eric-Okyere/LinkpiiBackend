@@ -17,6 +17,14 @@ driverphone:{
     type:String,
     required:true
 },
+product:{
+    type:String,
+    required:true
+},
+packagesize:{
+    type:String,
+    default:""
+},
 time:{
     type:String,
     required:true

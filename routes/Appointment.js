@@ -6,8 +6,8 @@ const Appointment = require("../models/Car/Appointment");
 router.post("/", async (req, res) => {
   console.log("Request body:", req.body);
   try {
-    const { username, userphone, drivername, driverphone, time, datepick, userlocation, region, location, desregion, deslocation } = req.body;
-    const newAppointment = new Appointment({ username, userphone, drivername, driverphone, time, datepick, userlocation, region, location, desregion, deslocation });
+    const { username, userphone, drivername, driverphone, product, packagesize, time, datepick, userlocation, region, location, desregion, deslocation } = req.body;
+    const newAppointment = new Appointment({ username, userphone, drivername, driverphone, product, packagesize, time, datepick, userlocation, region, location, desregion, deslocation });
     // Validate required fields
     // if (!username || !userphone || !drivername || !driverphone || !time || !datepick || !userlocation || !region || !location) {
     //   return res.status(400).json({ error: "All fields are required" });
