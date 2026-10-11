@@ -13,6 +13,7 @@ const { withWatermark } = require('../utils/watermarkOverlay');
 const { Car } = require('../models/Car/CarModel');
 const { Category } = require('../models/categories/categories');
 const { notifyWebUsers } = require('../utils/notifyWebUsers');
+const { postAutoComment } = require('../utils/autoComments');
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 
 // Cloudinary Configuration
@@ -284,6 +285,7 @@ router.put('/:id/approve', async (req, res) => {
         type: 'product',
         itemId: product._id,
       });
+      postAutoComment(Product, product._id);
     }
 
     res.json(product);

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { notifyWebUsers } = require('../utils/notifyWebUsers');
+const { postAutoComment } = require('../utils/autoComments');
 const { toggleLike, getLikeStatus } = require('../controllers/Likes');
 const multer = require('multer');
 const cloudinary = require("cloudinary").v2
@@ -442,6 +443,7 @@ router.put('/:id/approve', async (req, res) => {
         type: 'buildings',
         itemId: product._id,
       });
+      postAutoComment(Buildings, product._id);
     }
 
     res.json(product);

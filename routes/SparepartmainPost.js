@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { notifyWebUsers } = require('../utils/notifyWebUsers');
+const { postAutoComment } = require('../utils/autoComments');
 const { toggleLike, getLikeStatus } = require('../controllers/Likes');
 const {Product} = require('../models/products/Sparepartsmainpost')
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
@@ -330,6 +331,7 @@ router.put('/:id/approve', async (req, res) => {
         type: 'sparepartsmainpost',
         itemId: product._id,
       });
+      postAutoComment(Product, product._id);
     }
 
     res.json(product);

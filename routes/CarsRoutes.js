@@ -3,6 +3,7 @@ const { Car } = require("../models/Car/CarModel");
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 const router = express.Router();
 const { notifyWebUsers } = require('../utils/notifyWebUsers');
+const { postAutoComment } = require('../utils/autoComments');
 const { toggleLike, getLikeStatus } = require('../controllers/Likes');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { withWatermark } = require('../utils/watermarkOverlay');
@@ -232,6 +233,7 @@ router.put('/:id/approvecar', async (req, res) => {
         type: 'cars',
         itemId: product._id,
       });
+      postAutoComment(Car, product._id);
     }
 
     res.json(product);

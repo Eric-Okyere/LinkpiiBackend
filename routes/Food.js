@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { notifyWebUsers } = require('../utils/notifyWebUsers');
+const { postAutoComment } = require('../utils/autoComments');
+const { Foodcomment } = require('../models/Food/FoodComment');
 const { toggleLike, getLikeStatus } = require('../controllers/Likes');
 const {Food} = require('../models/Food/Food')
 const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
@@ -403,6 +405,7 @@ router.put('/:id/approve', async (req, res) => {
         type: 'food',
         itemId: product._id,
       });
+      postAutoComment(Food, product._id, Foodcomment);
     }
 
     res.json(product);
