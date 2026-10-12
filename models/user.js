@@ -121,6 +121,18 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  // Captured once at first-time signup via the browser/device
+  // Geolocation API, so staff can see roughly where a user is
+  // without asking them. Never required - some users decline the
+  // location permission prompt, and the mobile app may not send it.
+  latitude: {
+    type: Number,
+    default: null
+  },
+  longitude: {
+    type: Number,
+    default: null
+  },
 });
 
 

@@ -32,6 +32,14 @@ const CallSchema = mongoose.Schema({
         type:Date, 
         default: Date.now 
       },
+    // Captured client-side (navigator.geolocation) at the moment the
+    // user taps "Call" on any listing, so admin/driver can be given
+    // the caller's exact position. Optional - the browser permission
+    // may be denied.
+    userlocation: {
+        latitude: { type: Number, default: null },
+        longitude: { type: Number, default: null },
+    },
 })
 
 exports.Call = mongoose.model("call", CallSchema)

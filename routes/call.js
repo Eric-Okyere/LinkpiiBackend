@@ -26,11 +26,11 @@ router.get('/get/count', async (req, res) => {
 
 
 router.post('/', async (req, res) => {
-    const { name, phone, email, receiverphone, recname, pagename } = req.body;
+    const { name, phone, email, receiverphone, recname, pagename, userlocation } = req.body;
 
     try {
         // Create a new Airtel record
-        const caller = new Call({ name, phone, email, receiverphone, recname, pagename });
+        const caller = new Call({ name, phone, email, receiverphone, recname, pagename, userlocation });
         
         // Save the Airtel record to the database
         await caller.save();
