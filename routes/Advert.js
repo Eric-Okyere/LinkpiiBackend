@@ -5,6 +5,7 @@ const cloudinary = require("cloudinary").v2
 require("dotenv/config")
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { Advert } = require('../models/advert');
+const { deleteListingAssets } = require('../utils/deleteCloudinaryAssets');
 
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
@@ -116,17 +117,18 @@ router.put('/advert/:id', upload.single('picture'), async (req, res) => {
 
 
 
- router.delete("/advert/:id",(req, res)=>{
-    Advert.findByIdAndRemove(req.params.id).then(user=>{
-        if(user){
-            return res.status(200).json({success:true, message:"the users is deleted successfully"})
-        } else{
-            return res.status(404).json({success: false, message: "users not found"})
-        }
-    }).catch(err=>{
-        return res.status(400).json({success: false, error: err})
-    })
- })
+ router.delete("/advert/:id", async (req, res) => {
+  try {
+    const advert = await Advert.findByIdAndRemove(req.params.id);
+    if (!advert) return res.status(404).json({ success: false, message: "advert not found" });
+
+    await deleteListingAssets(advert, [{ field: 'picture', resourceType: 'image' }]);
+
+    return res.status(200).json({ success: true, message: "the advert is deleted successfully" });
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err });
+  }
+});
 
  
 
